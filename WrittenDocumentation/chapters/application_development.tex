@@ -33,8 +33,6 @@ From the development perspective we have decided a list of specifications which 
     \item Remove a certain company from available companies for clients
     \item Respond to user feedback
     \item Request the system to update financial data available with new request from external API
-    
-    \item All operations which can be done by a client
 \end{itemize}
 
 \subsection{Application Architecture}
@@ -42,10 +40,25 @@ In order to facilitate accessibility for the application, the decided architectu
 
 The need for a dedicated server (of sets of servers) stems firstly from the amount of financial data used for predictions. Bundling large amounts of data with a portable mobile application is unacceptable. Moreover, this data needs frequent updates from known sources which have free API-s available, but with some low limits of requests per day. In addition, a large amount of neural networks will be maintained for different goals, time-horizons and companies. While nowadays mobile phones are becoming more and more powerful being capable of running some machine learning tasks, still most of the work is done in the cloud on dedicated servers. Lastly, moving the computational cost from the client to a server allows the application to be run on a larger variety of devices which otherwise might have been insufficient.
 
-\section{Set of Technologies}
-\subsection{Tensorflow}
+In order to facilitate possible integration in modern cloud systems, we are going to split the server computation cost in two major parts. The first part which will directly communicate with the client application will contain the entire business logic necessary to address most features which do not require any sort of prediction. The second part will behave similar to a Cloud API service for machine-learning operations regarding stock market prediction. It will be standalone and totally separated from the first part, maintaining only the network architectures already trained and expose a REST API for the business logic server to request any computations regarding prediction. The following picture attached contains a visual description of what has been discussed.
 
-\subsection{Spring Framework}
+\begin{figure}[H]
+\centering
+\includegraphics[height=12cm]{images/HighLevelArchitecture.png} 
+\caption{High Level Architecture of the Application}
+\label{fig:highlevelarchitecture}
+\end{figure}
 
-\subsection{Android Software Development Kit and Jetpack}
 
+\subsection{Abstract Design - Use Case Diagram}
+In the following subsection we are going to present the associated Use Case Diagram with the previously specified requirements specification. Two actors have been found along: the client and the admin. There are some use cases which belong to both, while most of them are separate.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=13cm]{images/UseCaseDiagram.png} 
+\caption{Use Case Diagram}
+\label{fig:usecasediagram}
+\end{figure}
+
+
+\section{Application Core Functionalities}
