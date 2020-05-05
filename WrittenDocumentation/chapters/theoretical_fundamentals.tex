@@ -9,7 +9,7 @@ This thesis will tackle the topic of stock market prediction more from a technic
 
 
 
-\subsection{Historical evolution techniques in stock market prediction}
+\subsection{Techniques in stock market prediction}
 Even though the stock market has a long history, only in the last couple of decades we have seen real development and research in terms of techniques to automate or aid the investor in the process of stock market prediction. At our current state, we can group all techniques in the following categories: statistical, pattern recognition, machine learning, sentiment analysis and hybrid.\cite{shah2019stock} At their core, they can be classified as mainly technical analysis, but they can also borrow some aspects from fundamental analysis.
 
 Prior to the emergence of machine learning, statistical techniques were used which they often assumed linearity. However, they were mostly replaced step by step with other techniques which are more and more researched especially with the exponential growth in computational power. All the other categories may be considered to some degree as machine learning, but they are split accordingly due to the fact that they usually have different goals in mind. While pattern recognition works mostly on predicting certain figures or shapes which repeat themselves with unknown periodicity, machine learning category covers many techniques which have some degree of similarity and not being different enough to represent an entire category. Sentiment analysis represents also a trending methodology which have gained a lot of momentum lately even in financial time series analysis, but it is still mostly researched for recommendation systems.
@@ -43,7 +43,9 @@ The problem of stock market prediction may also be split depending on what infor
 \end{itemize}
 For the classification category, we will split it in three or five categories (not decided yet): major decline, minor decline, stagnation, minor increase, major increase. Based on all this variants, we are going to compare and decide how should we interpret all results into an automated algorithm which decides whether to buy or sell.
 
-\subsection{Data}
+\subsection{Methodology in training data}
+The following subsection will present the details and methodologies behind choosing and preparing the data for future training. As mentioned already in a previous section, stock market prediction may make use of various information in order to attempt forecasting future prices depending on many factors such as the time horizon.
+
 Because we are not going to predict intraday evolution of prices (which is usually done in fast markets as Forex), we are going to use the classic data which is provided for evaluating a company stock value. It is available daily and contains five measurements abbreviated usually as OCHLV:
 \begin{enumerate}
     \item Open - the value of a single company stock at the beginning of the daily trading session
@@ -74,29 +76,29 @@ Other types of classifications are relatively hard to promote or justify for som
 
 Secondly, we are going to summarize the trending techniques of architectures used in financial time series problems. According to \cite{sezer2020financial} recurrent neural networks dominated in terms of used architectures. The main reason for this occurrence is the actual nature of our problem which implies data across a timeline with time-dependent components. Even though, recurrent neural networks accounted for more than half of the models, we should mention that many variations of recurrent neural networks have been included in this category and classic recurrent neural networks weren't nearly as present as more popular choices (as in other domains) such as long short-term memory (LSTM) or more recently gated recurrent unit (GRU). LSTM networks have been successfully used in domains such as speech recognition, music composition or even time series prediction giving them a stronger sense of security. Besides recurrent neural networks, other techniques were also used such as deep multi layer perceptron (DMLP) due to its acceptance in the past of its 'older brother', the multi layer perceptron (MLP), convolutional neural networks (CNN) or deep reinforcement learning. Taking everything into account, this thesis will use variations composed of LSTM and GRU networks for all the previously mentioned variants of problems due to their recognized worth in another domain and their large flexibility in terms of both classification and regression problems
 
-\subsection{LSTM and GRU}
+\subsection{LSTM and GRU techniques}
 In the following subsection, we are going to present the details regarding the structure and characteristics of long short-term memory and gated recurrent unit layers and networks. The discussion will progressively evolve from classic recurrent neural networks to LSTM which were first proposed over two decades ago and finally to GRU which is more of a newer concept being more 'light-weight' than LSTM while maintaining most of their counter-part abilities.
 
-Recurrent neural networks (RNN) have been created with series in mind such that neighbouring inputs might have an influence on each other in some way.A RNN remembers a portion of its past (previous inputs) and influences the results of future inputs. In order to achieve this behaviour, RNN in addition to 'vanilla' neural networks contain a hidden state which is updated and used for each input received in the series. This hidden state can be thought of as a context based on prior inputs. Moreover, this structure allows to process variable length sequences of inputs, making them applicable for unsegmented tasks such as handwriting recognition. In addition, when speaking of recurrent neural networks we can introduce the topic of 'parameter sharing' which has been successfully used in image classifying convolutional neural networks. However, a major difference should be noted in the actual definition of the neighbour between RNN (elements in a series) and CNN (neighbouring pixels in an image).
+Recurrent neural networks (RNN) have been created with series in mind such that neighbouring inputs might have an influence on each other in some way. A RNN remembers a portion of its past (previous inputs) and influences the results of future inputs. In order to achieve this behaviour, RNN in addition to classic neural networks contain a hidden state which is updated and used for each input received in the series. This hidden state can be thought of as a context based on prior inputs. Moreover, this structure allows to process variable length sequences of inputs, making them applicable for unsegmented tasks such as handwriting recognition. In addition, when speaking of recurrent neural networks we can introduce the topic of 'parameter sharing' which has been successfully used in image classifying convolutional neural networks. However, a major difference should be noted in the actual definition of the neighbour between RNN (elements in a series) and CNN (neighbouring pixels in an image).
 
 Even though, RNN were a significant improvement in the theory of machine learning, their classic versions didn't see much success initially. Practical difficulties have been reported in training recurrent neural networks to perform tasks in which the temporal contingencies present in the input/output sequences span long intervals \cite{bengio1994learning}. Based on the previous citation, it was demonstrated that it exists a trade-off between efficient learning by grading descent and maintaining relevant context information for long periods of time. Practically, RNN usually suffer of the well known problem of 'vanishing gradient'. The main issue arises when training a multi-layer network while using a backpropagation and gradient-based learning algorithms for updating the network values. While the initial error is transmitted along the entire network in order to adjust the weights accordingly, there is an increased chance of getting an update which progressively becomes more and more insignificant for the actual weight of that cell causing a valid update which actually doesn't influence the network behaviour a lot.  Establishing on these aspects, further research was done to search for stricter structures and architectures which would improve the previous state of the art. Long short-term memory has been a major breakthrough in finding structures that would outperform previous networks, being proposed in 1997. As a testimony, even today many applications in different domains representing state of the art are using LSTM architectures under the hood.
 
-Long Short Term Memory networks -abbreviated as LSTM- were introduced by Hochreiter and Schmidhuber in 1997 \cite{hochreiter1997long} and were further refined while replacing vanilla RNN more and more. The main difference between them is the new structure of a singular cell. While the repeating module between different layers is mostly the same, an LSTM cell has a much more complicated structure in order to address the long-term dependecies issue. In order to compare them and explain the structure we are going to examine and compare two images with the content of each cell.
+Long Short Term Memory networks -abbreviated as LSTM- were introduced by Hochreiter and Schmidhuber in 1997 \cite{hochreiter1997long} and were further refined while replacing classic RNN more and more. The main difference between them is the new structure of a singular cell. While the repeating module between different layers is mostly the same, an LSTM cell has a much more complicated structure in order to address the long-term dependecies issue. In order to compare them and explain the structure we are going to examine and compare two images with the content of each cell.
 
 \begin{figure}[H]
 
-\begin{subfigure}{0.5\textwidth}
-\includegraphics[width=0.9\linewidth, height=5cm]{images/VanillaRNNCell.png} 
-\caption{Vanilla Recurrent Neural Network Cell}
-\label{fig:vanillarnncell}
+\begin{subfigure}{0.47\textwidth}
+\includegraphics[width=0.9\linewidth, height=5cm]{images/RNNCell.png} 
+\caption{Classic Recurrent Neural Network Cell}
+\label{fig:rnncell}
 \end{subfigure}
-\begin{subfigure}{0.5\textwidth}
+\begin{subfigure}{0.47\textwidth}
 \includegraphics[width=0.9\linewidth, height=5cm]{images/LSTMCell.png}
 \caption{Long Short Term Memory Cell}
 \label{fig:lstmcell}
 \end{subfigure}
 
-\caption{Comparison between Vanilla Recurrent Neural Network Cell and Long Short Term Memory Cell}
+\caption{Comparison between Classic Recurrent Neural Network Cell and Long Short Term Memory Cell}
 \label{fig:rnnandlstmcomparison}
 \end{figure}
 \begin{flushright}
@@ -218,14 +220,45 @@ Firstly, we are going to cite "An Empirical Exploration of Recurrent Network Arc
 The other citation used is "LSTM: A Search Space Odyssey" \cite{greff2016lstm} which tried to tackle the same problem. However, they only considered nine architectures and evaluated the influence of hyperparameters across a set of problems. In terms of hyperparameters, the learning rate and hidden layer size influence the performance the most, while other hyperparameters such as input noise were found to diminish the results for most architectures. In the end, they concluded that some elements of the LSTM can be eliminated or merge in order to gain training time improvements, but the overall performance of the architectures is very similar across the tested problems with fine-tuned parameters.
 
 
-\subsection{Usage and Results}
+\subsection{Results}
 
 
 \newpage
+
 \section{Set of Technologies}
+
+In the next section, this thesis will present the main technologies used. The list of technologies follows the natural order of layers beginning with what have been utilized to construct and train the machine learning models and ending with the technology used for creating the client's application.
 
 \subsection{Tensorflow}
 
+
 \subsection{Spring Framework}
 
-\subsection{Android Software Development Kit and Jetpack}
+\subsection{Android Software Development Kit}
+
+\subsubsection{Android Basics}
+
+Android is the most popular mobile operating system and one of the two major players in the market -alongside iOS. It is based on a modified Linux Kernel and other open source platforms, designed mainly for mobile devices such as smartphones, tablets and Google's version is the one used by almost everyone.
+
+In order to facilitate the software development of third-party apps, Google created and published the Android Software Development Kit (SDK) which allows developers to integrate code mainly at the most upper-level of the system. Under the application layer, there exists a specific hierarchy on top of the Linux kernel, but they aren't concerning the application developers.
+
+Different from many operating systems, an application is Android is almost totally isolated from the rest. Basically, each process in Android has its own Virtual Machine (VM) and each app has its own unique process creating a security sandbox environment. The Android system implements the principle of 'least privilege' which means that each app has access only to the minimal amount of components to work and nothing more. Consequently, each application contains a manifest file which specifies the features, permissions and hardware components which will be used by the application. 
+
+App components represent the building block of any Android application. Each component is considered an entry point to your point, the one accessing being either the user or the system itself. There are four major existing types: activities, services, broadcast receivers and content providers. While each of them has its own lifecycle
+and serves a different purpose, activities are widely considered the staple in terms of building blocks. An interesting design aspect is the communication between components. While apps are isolated as mentioned earlier, each component of an application can access an external component of another application through a asynchronous message called 'Intent'. This message is maintained and passed along by the Android System itself in order to respect the previously mentioned isolation points. For this main reason, an Android application hasn't only one entry point as we were used from other systems changing the standard paradigm structure.
+
+\subsubsection{Activity Lifecycle}
+
+The activity component is the main process with which you facilitate an independent point of entry in your application. It also provides the layout which will be drawn on the screen by the operating system and usually represents the main interaction point with the user. Each created activity must be added to the manifest file which will contain other options available to extend your activity functionalities.
+
+A core topic in Android is the lifecycle of a specific component, more importantly the lifecycle of an activity. The lifecycle of an activity can be seen as the flow of states through which an activity passes when it is created, paused, destroyed by the system etc. From the development perspective, the Activity class offers a series of callbacks which are called by the system itself when some event happens changing the state of the application. In order to easily present the different states and changes, we are going to use an official simplified schematics from the guidelines.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=10cm]{images/ActivityLifecycle.png} 
+\caption{Android Activity Lifecycle Flow}
+\label{fig:androidactivitylifecycle}
+\end{figure}
+\begin{flushright}
+Original picture: https://developer.android.com/guide/components/activities/activity-lifecycle
+\end{flushright}

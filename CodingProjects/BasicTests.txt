@@ -1,0 +1,25 @@
+Ibm, S&P500 only, 30 past days, 3 days future prediction, [1990 - ...]
+
+
+Binary classification - one output node:
+Val accuracy: 0.4905
+
+Binary classification - two output nodes
+Val accuracy: 0.5422
+
+Binary classification - from single point regression
+val_loss: 0.00514
+val accuracy: 0.5131
+
+
+Ibm, S&P500 only, 90 past days, 3 days future prediction, [1990 - ...]
+
+Binary classification - one output node:
+Val accuracy: 0.4893
+
+Binary classification - two output nodes
+Val accuracy: 0.5297
+
+Binary classification - from single point regression
+val_loss - 0.00576
+val accuracy: 0.5144

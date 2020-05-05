@@ -1,14 +1,17 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
+from typing import List
 
-import math
-import os
+import tensorflow as tf
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
-import tensorflow as tf
+import seaborn as sns
 from absl import app, flags, logging
 from absl.flags import FLAGS
+import math
 
 flags.DEFINE_string('company_ticker_symbol', 'ibm', 'shortcut name of the company')
 flags.DEFINE_string('stocks_path', '../Data/Kaggle_Stocks/Stocks', 'path for the stock information about the company')
@@ -50,8 +53,6 @@ def rename_company_stock_columns(stock_dataframe: pd.DataFrame, company_ticker_s
 
 
 def drop_very_old_data(stock_dataframe: pd.DataFrame) -> pd.DataFrame:
-    # stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 2005]
-    # stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year <= 2010]
     stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 1990]
     return stock_dataframe
 
@@ -240,31 +241,13 @@ def save_plot(plot_data, delta, title, figure_name):
     plt.savefig(filename_path)
 
 
-"""
-    Returns a tuple from two arrays:
-    - first array contains the input for the network:
-        -an array of the past_history size containing the considered features
-    - second array contains the "sample output" of the network for comparison:
-        -an array of size equal to "future" size 
-"""
-
-
-def multivariate_data(initial_dataset, output_target_dataset,
-                      start_index, end_index,
-                      past_history_size, output_target_size):
-    input_data = []
-    output_data = []
-
-    start_index = start_index + past_history_size
-    if end_index is None:
-        end_index = len(initial_dataset) - output_target_size
-
-    for i in range(start_index, end_index):
-        indices = range(i - past_history_size, i)
-        input_data.append(initial_dataset[indices])
-        output_data.append(output_target_dataset[i: i + output_target_size])
-
-    return np.array(input_data), np.array(output_data)
+def generate_output_classification_vector(last_input_price, future_price):
+    if last_input_price >= future_price:
+        # return [1, 0]
+        return 0
+    else:
+        # return [0, 1]
+        return 1
 
 
 def singlevariate_data(initial_dataset, output_target_dataset,
@@ -280,13 +263,11 @@ def singlevariate_data(initial_dataset, output_target_dataset,
     for i in range(start_index, end_index):
         indices = range(i - past_history_size, i)
         input_data.append(initial_dataset[indices])
-        output_data.append(output_target_dataset[i + output_target_size])
+        output_vector_label = generate_output_classification_vector(initial_dataset[i][3],  # Close price
+                                                                    output_target_dataset[i + output_target_size])
+        output_data.append(output_vector_label)
 
     return np.array(input_data), np.array(output_data)
-
-
-def mean_squared_error_loss(y_actual, y_pred):
-    return tf.reduce_mean(tf.square(tf.subtract(y_actual, y_pred)))
 
 
 def compute_binary_accuracy(x, y, multi_step_model):
@@ -302,21 +283,11 @@ def compute_binary_accuracy(x, y, multi_step_model):
         current_batch_x = x[i * batch_size:last_element]
         current_batch_y = y[i * batch_size:last_element]
 
-        expected_price_list = current_batch_y
+        expected_classification = current_batch_y
         computed_price_list = multi_step_model.predict(current_batch_x)
-        current_close_price_list = []
-        for j in range(len(current_batch_x)):
-            current_close_price_list.append(current_batch_x[j][-1][3])
 
-        for j in range(0, len(current_close_price_list)):
-            current_close_price = current_close_price_list[j]
-            expected_price = expected_price_list[j]
-            computed_price = computed_price_list[j][0]
-            if ((expected_price > current_close_price and computed_price > current_close_price) or
-                    expected_price <= current_close_price and computed_price <= current_close_price):
-                # print("Current_close_price: {}, Expected_price: {}, Computed_price: {}".format(current_close_price,
-                #                                                                               expected_price,
-                #                                                                               computed_price))
+        for j in range(0, len(expected_classification)):
+            if expected_classification[j] == np.argmax(computed_price_list[j]):
                 valid_predictions += 1
 
     accuracy = valid_predictions / no_samples
@@ -353,15 +324,14 @@ def model_training(normalized_dataset):
     multi_step_model.add(tf.keras.layers.LSTM(128,
                                               input_shape=x_train.shape[-2:],
                                               return_sequences=True))
-    # multi_step_model.add(tf.keras.layers.LSTM(128))
     multi_step_model.add(tf.keras.layers.LSTM(64,
                                               dropout=0.1))
-    multi_step_model.add(tf.keras.layers.Dense(1))
+    # multi_step_model.add(tf.keras.layers.Dense(64))
+    multi_step_model.add(tf.keras.layers.Dense(2))
 
     multi_step_model.compile(optimizer=tf.keras.optimizers.Adam(),
-                             loss=mean_squared_error_loss,
-                             metrics=[tf.keras.metrics.MeanSquaredError(),
-                                      tf.keras.metrics.MeanAbsoluteError()])
+                             loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                             metrics=['accuracy'])
 
     no_samples_per_epoch = math.ceil(len(x_train) / FLAGS.batch_size)
     multi_step_history = multi_step_model.fit(train_data,
@@ -381,6 +351,10 @@ def model_training(normalized_dataset):
     best_checkpoint = tf.train.latest_checkpoint(FLAGS.checkpoints_directory)
     multi_step_model.load_weights(best_checkpoint)
 
+    probability_model = tf.keras.Sequential([multi_step_model,
+                                             tf.keras.layers.Softmax()])
+
+    '''
     i = 1
     for x, y in validation_data.take(5):
         save_plot([x[0][:, 3].numpy(), y[0].numpy(), multi_step_model.predict(x)[0]],
@@ -388,7 +362,7 @@ def model_training(normalized_dataset):
                   "Validation",
                   "Validation_" + str(i))
         i += 1
-
+    
     i = 1
     for x, y in train_data.take(5):
         save_plot([x[0][:, 3].numpy(), y[0].numpy(), multi_step_model.predict(x)[0]],
@@ -396,9 +370,9 @@ def model_training(normalized_dataset):
                   "Train",
                   "Train_" + str(i))
         i += 1
-
-    training_accuracy = compute_binary_accuracy(x_train, y_train, multi_step_model)
-    validation_accuracy = compute_binary_accuracy(x_validation, y_validation, multi_step_model)
+    '''
+    training_accuracy = compute_binary_accuracy(x_train, y_train, probability_model)
+    validation_accuracy = compute_binary_accuracy(x_validation, y_validation, probability_model)
     print("Training accuracy was: " + str(training_accuracy))
     print("Validation accuracy was: " + str(validation_accuracy))
 
