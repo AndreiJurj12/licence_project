@@ -27,7 +27,7 @@ flags.DEFINE_integer('percentage_split', 80, 'Percentage of training vs validati
 flags.DEFINE_string('output_directory', 'output', 'Output directory for the plots')
 flags.DEFINE_string('checkpoints_directory', 'checkpoints', 'Output directory for the checkpoints weights')
 
-flags.DEFINE_integer('past_history_no_days', 90, 'The no days to use for past history data')
+flags.DEFINE_integer('past_history_no_days', 30, 'The no days to use for past history data')
 flags.DEFINE_integer('future_prediction_no_days', 3, 'The no days to use for predicting in the future')
 
 flags.DEFINE_integer('batch_size', 128, 'batch size for training')
@@ -53,7 +53,8 @@ def rename_company_stock_columns(stock_dataframe: pd.DataFrame, company_ticker_s
 
 
 def drop_very_old_data(stock_dataframe: pd.DataFrame) -> pd.DataFrame:
-    stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 1990]
+    stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 1995]
+    stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year <= 2005]
     return stock_dataframe
 
 

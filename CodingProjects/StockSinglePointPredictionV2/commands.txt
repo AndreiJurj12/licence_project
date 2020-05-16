@@ -1,0 +1,1 @@
+python main.py --normalize_data none --standardize_data True

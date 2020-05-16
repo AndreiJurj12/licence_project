@@ -10,25 +10,28 @@ import tensorflow as tf
 from absl import app, flags, logging
 from absl.flags import FLAGS
 
-flags.DEFINE_string('company_ticker_symbol', 'ibm', 'shortcut name of the company')
+flags.DEFINE_string('company_ticker_symbol', 'jpm', 'shortcut name of the company')
 flags.DEFINE_string('stocks_path', '../Data/Kaggle_Stocks/Stocks', 'path for the stock information about the company')
 flags.DEFINE_string('company_file_ending', '.us.txt', 'ending name for the file containing stock information')
 
 flags.DEFINE_list('removed_columns_stock_company', 'OpenInt', 'list of columns to remove for stock company dataframe')
 
-flags.DEFINE_boolean('use_stock_indices', True, 'whether to use or not stock indices for the network')
+flags.DEFINE_boolean('use_stock_indices', 1, 'whether to use or not stock indices for the network')
 # flags.DEFINE_list('stock_indices_list', 'S&P500, DowJonesIndustrial, NasdaqComposite', 'names of stock indices used')
 flags.DEFINE_list('stock_indices_list', 'S&P500', 'names of stock indices used')
+
+flags.DEFINE_enum('normalize_data', 'none', ['none', 'min_max', 'increased_min_max'], 'whether to normalize data or not')
+flags.DEFINE_boolean('standardize_data', 1, 'whether to standardize data or not')
 
 flags.DEFINE_integer('percentage_split', 80, 'Percentage of training vs validation data')
 flags.DEFINE_string('output_directory', 'output', 'Output directory for the plots')
 flags.DEFINE_string('checkpoints_directory', 'checkpoints', 'Output directory for the checkpoints weights')
 
-flags.DEFINE_integer('past_history_no_days', 90, 'The no days to use for past history data')
+flags.DEFINE_integer('past_history_no_days', 60, 'The no days to use for past history data')
 flags.DEFINE_integer('future_prediction_no_days', 3, 'The no days to use for predicting in the future')
 
 flags.DEFINE_integer('batch_size', 128, 'batch size for training')
-flags.DEFINE_integer('no_epochs', 30, 'no epochs for training')
+flags.DEFINE_integer('no_epochs', 100, 'no epochs for training')
 
 
 def read_company_stock_data(company_ticker_symbol: str) -> pd.DataFrame:
@@ -50,9 +53,9 @@ def rename_company_stock_columns(stock_dataframe: pd.DataFrame, company_ticker_s
 
 
 def drop_very_old_data(stock_dataframe: pd.DataFrame) -> pd.DataFrame:
-    # stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 2005]
-    # stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year <= 2010]
     stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 1990]
+    stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year <= 2005]
+    # stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 1990]
     return stock_dataframe
 
 
@@ -135,16 +138,32 @@ def compute_training_split_index(dataset: pd.DataFrame, percentage_split=80) -> 
     return (number_rows * percentage_split) // 100
 
 
-def normalize_data(unified_stock_dataframe: pd.DataFrame):
-    training_ending_index = compute_training_split_index(unified_stock_dataframe,
-                                                         percentage_split=FLAGS.percentage_split)
-
-    dataset = unified_stock_dataframe.values
+def standardize_data(unified_stock_dataset, training_ending_index):
+    dataset = unified_stock_dataset
     dataset_mean = dataset[:training_ending_index].mean(axis=0)
-    dataset_std = dataset[:training_ending_index].mean(axis=0)
+    dataset_std = dataset[:training_ending_index].std(axis=0)
 
-    normalized_dataset = (dataset - dataset_mean) / dataset_std
-    # normalized_dataset = dataset
+    standardized_dataset = (dataset - dataset_mean) / dataset_std
+    return standardized_dataset
+
+
+def normalize_data(unified_stock_dataset, training_ending_index):
+    dataset = unified_stock_dataset
+    dataset_max = dataset[:training_ending_index].max(axis=0)
+    dataset_min = dataset[:training_ending_index].min(axis=0)
+
+    normalized_dataset = (dataset - dataset_min) / (dataset_max - dataset_min)
+    return normalized_dataset
+
+
+def normalize_data_increased_interval(unified_stock_dataset, training_ending_index):
+    dataset = unified_stock_dataset
+    dataset_max = dataset[:training_ending_index].max(axis=0)
+    dataset_max = dataset_max * 1.5
+    dataset_min = dataset[:training_ending_index].min(axis=0)
+    dataset_min = dataset_min * 0.66
+
+    normalized_dataset = (dataset - dataset_min) / (dataset_max - dataset_min)
     return normalized_dataset
 
 
@@ -349,14 +368,36 @@ def model_training(normalized_dataset):
     validation_data = tf.data.Dataset.from_tensor_slices((x_validation, y_validation))
     validation_data = validation_data.shuffle(buffer_size).batch(FLAGS.batch_size)
 
+    tf.keras.backend.set_floatx('float64')
     multi_step_model = tf.keras.models.Sequential()
     multi_step_model.add(tf.keras.layers.LSTM(128,
                                               input_shape=x_train.shape[-2:],
+                                              dropout=0.2,
                                               return_sequences=True))
-    # multi_step_model.add(tf.keras.layers.LSTM(128))
     multi_step_model.add(tf.keras.layers.LSTM(64,
-                                              dropout=0.1))
+                                              dropout=0.3))
+    multi_step_model.add(tf.keras.layers.Dense(16))
     multi_step_model.add(tf.keras.layers.Dense(1))
+
+    """
+    multi_step_model = tf.keras.models.Sequential()
+    multi_step_model.add(tf.keras.layers.Conv1D(filters=64,
+                                                kernel_size=3,
+                                                activation="relu"))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.Conv1D(filters=32,
+                                                kernel_size=3,
+                                                activation="relu"))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.Conv1D(filters=16,
+                                                kernel_size=3,
+                                                activation="relu"))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.LSTM(64,
+                                              dropout=0.2))
+    multi_step_model.add(tf.keras.layers.Dense(32))
+    multi_step_model.add(tf.keras.layers.Dense(1))
+    """
 
     multi_step_model.compile(optimizer=tf.keras.optimizers.Adam(),
                              loss=mean_squared_error_loss,
@@ -428,10 +469,23 @@ def main(_argv):
         unified_stock_dataframe_with_date = unified_stock_dataframe.copy(deep=True)
         unified_stock_dataframe = remove_date_columns_from_unified_dataframe(unified_stock_dataframe)
 
-    normalized_dataset = normalize_data(unified_stock_dataframe)
-    plot_company_close_price(unified_stock_dataframe_with_date, normalized_dataset)
+    training_ending_index = compute_training_split_index(unified_stock_dataframe_with_date, FLAGS.percentage_split)
+    dataset = unified_stock_dataframe.values
 
-    model_training(normalized_dataset)
+    if FLAGS.normalize_data != 'none':
+        # normalize dataset
+        if FLAGS.normalize_data == 'min_max':
+            print("Min-Max Normalization")
+            dataset = normalize_data(dataset, training_ending_index)
+        else:
+            print("Interval Min-Max Normalization")
+            dataset = normalize_data_increased_interval(dataset, training_ending_index)
+    if FLAGS.standardize_data:
+        print("Standardization")
+        dataset = standardize_data(dataset, training_ending_index)
+
+    plot_company_close_price(unified_stock_dataframe_with_date, dataset)
+    model_training(dataset)
 
 
 if __name__ == "__main__":
