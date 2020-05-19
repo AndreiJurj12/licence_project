@@ -23,7 +23,7 @@ flags.DEFINE_boolean('use_stock_indices', 1, 'whether to use or not stock indice
 flags.DEFINE_list('stock_indices_list', 'S&P500, DowJonesIndustrial, NasdaqComposite', 'names of stock indices used')
 # flags.DEFINE_list('stock_indices_list', 'S&P500', 'names of stock indices used')
 
-flags.DEFINE_enum('normalize_data', 'none', ['none', 'min_max', 'increased_min_max'],
+flags.DEFINE_enum('normalize_data', 'increased_min_max', ['none', 'min_max', 'increased_min_max'],
                   'whether to normalize data or not')
 flags.DEFINE_boolean('standardize_data', 1, 'whether to standardize data or not')
 
@@ -32,10 +32,10 @@ flags.DEFINE_string('output_directory', 'output', 'Output directory for the plot
 flags.DEFINE_string('checkpoints_directory', 'checkpoints', 'Output directory for the checkpoints weights')
 
 flags.DEFINE_integer('past_history_no_days', 30, 'The no days to use for past history data')
-flags.DEFINE_integer('future_prediction_no_days', 1, 'The no days to use for predicting in the future')
+flags.DEFINE_integer('future_prediction_no_days', 3, 'The no days to use for predicting in the future')
 
 flags.DEFINE_integer('batch_size', 128, 'batch size for training')
-flags.DEFINE_integer('no_epochs', 100, 'no epochs for training')
+flags.DEFINE_integer('no_epochs', 2, 'no epochs for training')
 
 
 def read_company_stock_data(company_ticker_symbol: str) -> pd.DataFrame:
@@ -59,7 +59,9 @@ def rename_company_stock_columns(stock_dataframe: pd.DataFrame, company_ticker_s
 def drop_very_old_data(stock_dataframe: pd.DataFrame) -> pd.DataFrame:
     stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 1990]
     stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year <= 2005]
+    # stock_dataframe = stock_dataframe[pd.to_datetime(stock_dataframe['Date']).dt.year >= 1990]
     return stock_dataframe
+
 
 def add_timestamp_column(stock_dataframe: pd.DataFrame) -> pd.DataFrame:
     stock_dataframe['Timestamp'] = stock_dataframe['Date'].apply(lambda x: pd.to_datetime(x).timestamp()).astype(int)
@@ -76,7 +78,6 @@ def prepare_company_stock_data(company_ticker_symbol: str) -> pd.DataFrame:
                                               volume="Volume")
         stock_dataframe.drop(columns="Timestamp", inplace=True)
         stock_dataframe.fillna(0, inplace=True)
-
     stock_dataframe = rename_company_stock_columns(stock_dataframe, company_ticker_symbol)
 
     print(stock_dataframe.head())
@@ -138,6 +139,7 @@ def remove_date_columns_from_unified_dataframe(unified_stock_dataframe: pd.DataF
     if FLAGS.use_stock_indices:
         stock_indices_date_columns_names = [name + "_Date" for name in FLAGS.stock_indices_list]
 
+
     unified_date_columns = [stock_company_column_name] + stock_indices_date_columns_names
     unified_stock_dataframe.drop(columns=unified_date_columns, inplace=True)
     return unified_stock_dataframe
@@ -183,6 +185,11 @@ def normalize_data_increased_interval(unified_stock_dataset, training_ending_ind
     return normalized_dataset
 
 
+def get_real_price(x, close_min, close_max, close_mean, close_std):
+    x = (np.asarray(x) * close_std + close_mean) * (close_max - close_min) + close_min
+    return x
+
+
 def plot_company_close_price(unified_stock_dataframe_with_date: pd.DataFrame, normalized_dataset):
     plt.figure(figsize=(18, 9))
     plt.plot(range(normalized_dataset.shape[0]), normalized_dataset[:, 3])
@@ -192,6 +199,24 @@ def plot_company_close_price(unified_stock_dataframe_with_date: pd.DataFrame, no
     plt.ylabel('Close Price Normalized', fontsize=18)
 
     filename_path = FLAGS.output_directory + "/" + "company_close_price.png"
+    plt.savefig(fname=filename_path)
+
+
+def plot_company_close_price_real(unified_stock_dataframe_with_date: pd.DataFrame, normalized_dataset, close_min,
+                                  close_max,
+                                  close_mean, close_std):
+    plt.figure(figsize=(18, 9))
+
+    price = normalized_dataset[:, 3]
+    real_price = get_real_price(price, close_min, close_max, close_mean, close_std)
+
+    plt.plot(range(normalized_dataset.shape[0]), real_price)
+    plt.xticks(range(0, normalized_dataset.shape[0], 500),
+               unified_stock_dataframe_with_date[FLAGS.company_ticker_symbol + '_Date'].loc[::500], rotation=45)
+    plt.xlabel('Date', fontsize=18)
+    plt.ylabel('Close Price Real', fontsize=18)
+
+    filename_path = FLAGS.output_directory + "/" + "company_close_price_real.png"
     plt.savefig(fname=filename_path)
 
 
@@ -209,6 +234,26 @@ def plot_train_history(history, title):
     plt.legend()
 
     filename_path = FLAGS.output_directory + "/" + "train_validation_loss.png"
+    plt.savefig(filename_path)
+
+
+def plot_train_history_real(history, title, close_min, close_max, close_mean, close_std):
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    loss = get_real_price(loss, close_min, close_max, close_mean, close_std)
+    val_loss = get_real_price(val_loss, close_min, close_max, close_mean, close_std)
+
+    epochs = range(len(loss))
+
+    plt.figure()
+
+    plt.plot(epochs, loss, 'b', label='Training loss')
+    plt.plot(epochs, val_loss, 'r', label='Validation loss')
+    plt.title(title)
+    plt.legend()
+
+    filename_path = FLAGS.output_directory + "/" + "train_validation_loss_real.png"
     plt.savefig(filename_path)
 
 
@@ -275,13 +320,31 @@ def save_plot(plot_data, delta, title, figure_name):
     plt.savefig(filename_path)
 
 
-def generate_output_classification_vector(last_input_price, future_price):
-    if last_input_price >= future_price:
-        # return [1, 0]
-        return 0
-    else:
-        # return [0, 1]
-        return 1
+"""
+    Returns a tuple from two arrays:
+    - first array contains the input for the network:
+        -an array of the past_history size containing the considered features
+    - second array contains the "sample output" of the network for comparison:
+        -an array of size equal to "future" size 
+"""
+
+
+def multivariate_data(initial_dataset, output_target_dataset,
+                      start_index, end_index,
+                      past_history_size, output_target_size):
+    input_data = []
+    output_data = []
+
+    start_index = start_index + past_history_size
+    if end_index is None:
+        end_index = len(initial_dataset) - output_target_size
+
+    for i in range(start_index, end_index):
+        indices = range(i - past_history_size, i)
+        input_data.append(initial_dataset[indices])
+        output_data.append(output_target_dataset[i: i + output_target_size])
+
+    return np.array(input_data), np.array(output_data)
 
 
 def singlevariate_data(initial_dataset, output_target_dataset,
@@ -297,11 +360,13 @@ def singlevariate_data(initial_dataset, output_target_dataset,
     for i in range(start_index, end_index):
         indices = range(i - past_history_size, i)
         input_data.append(initial_dataset[indices])
-        output_vector_label = generate_output_classification_vector(initial_dataset[i][3],  # Close price
-                                                                    output_target_dataset[i + output_target_size])
-        output_data.append(output_vector_label)
+        output_data.append(output_target_dataset[i + output_target_size])
 
     return np.array(input_data), np.array(output_data)
+
+
+def mean_squared_error_loss(y_actual, y_pred):
+    return tf.reduce_mean(tf.square(tf.subtract(y_actual, y_pred)))
 
 
 def compute_binary_accuracy(x, y, multi_step_model):
@@ -309,26 +374,35 @@ def compute_binary_accuracy(x, y, multi_step_model):
     # the fourth column (index 3 contains the close price)
     no_samples = len(x)
     batch_size = 128
-
-    valid_predictions = 0
     no_wins = 0
     no_losses = 0
+    valid_predictions = 0
     batch_iterations = math.ceil(no_samples / batch_size)
     for i in range(batch_iterations):
         last_element = min((i + 1) * batch_size, no_samples)
         current_batch_x = x[i * batch_size:last_element]
         current_batch_y = y[i * batch_size:last_element]
 
-        expected_classification = current_batch_y
+        expected_price_list = current_batch_y
         computed_price_list = multi_step_model.predict(current_batch_x)
+        current_close_price_list = []
+        for j in range(len(current_batch_x)):
+            current_close_price_list.append(current_batch_x[j][-1][3])
 
-        for j in range(0, len(expected_classification)):
-            if expected_classification[j] == np.argmax(computed_price_list[j]):
+        for j in range(0, len(current_close_price_list)):
+            current_close_price = current_close_price_list[j]
+            expected_price = expected_price_list[j]
+            computed_price = computed_price_list[j][0]
+            if ((expected_price > current_close_price and computed_price > current_close_price) or
+                    expected_price <= current_close_price and computed_price <= current_close_price):
+                # print("Current_close_price: {}, Expected_price: {}, Computed_price: {}".format(current_close_price,
+                #                                                                               expected_price,
+                #                                                                               computed_price))
                 valid_predictions += 1
-            if expected_classification[j] == 0:
-                no_losses += 1
-            else:
+            if expected_price > current_close_price:
                 no_wins += 1
+            else:
+                no_losses += 1
 
     accuracy = valid_predictions / no_samples
     losses_percent = no_losses / no_samples
@@ -336,7 +410,62 @@ def compute_binary_accuracy(x, y, multi_step_model):
     return [accuracy, losses_percent, wins_percent]
 
 
-def model_training(normalized_dataset):
+def predict_all_prices(model, normalized_dataset, past_history_size, future_no_days):
+    end_index = len(normalized_dataset) - future_no_days
+    start_index = past_history_size
+
+    output_data = []
+    for i in range(start_index, end_index):
+        indices = range(i - past_history_size, i)
+        input_data = normalized_dataset[indices]
+        output_price = model.predict(np.expand_dims(input_data, axis=0))[0][0]
+        output_data.append(output_price)
+
+    return output_data
+
+
+def get_all_predicted_price(model, normalized_dataset, past_history_size, future_no_days):
+    predicted_prices = normalized_dataset[0:past_history_size + future_no_days, 3]  # initialized first set
+    next_predicted_prices = np.array(predict_all_prices(model, normalized_dataset, past_history_size, future_no_days))
+    predicted_prices = np.concatenate((predicted_prices, next_predicted_prices), axis=None)
+    return predicted_prices
+
+
+def plot_company_predicted_plot(real_close_prices, predicted_close_prices, unified_stock_dataframe_with_date):
+    plt.figure(figsize=(18, 9))
+    plt.plot(range(len(real_close_prices)), real_close_prices, color='red', label='real close prices')
+    plt.plot(range(len(predicted_close_prices)), predicted_close_prices, color='green', label='predicted close prices')
+    plt.xticks(range(0, len(real_close_prices), 500),
+               unified_stock_dataframe_with_date[FLAGS.company_ticker_symbol + '_Date'].loc[::500], rotation=45)
+    plt.xlabel('Date', fontsize=18)
+    plt.ylabel('Close Price Preprocessed', fontsize=18)
+    plt.legend(loc="upper left")
+
+    filename_path = FLAGS.output_directory + "/" + "company_predicted_close_price.png"
+    plt.savefig(fname=filename_path)
+
+
+def plot_company_predicted_plot_real(real_close_prices, predicted_close_prices, unified_stock_dataframe_with_date,
+                                     close_min, close_max,
+                                     close_mean, close_std):
+    adapted_real_close_prices = get_real_price(real_close_prices, close_min, close_max, close_mean, close_std)
+    adapter_predicted_close_prices = get_real_price(predicted_close_prices, close_min, close_max, close_mean, close_std)
+
+    plt.figure(figsize=(18, 9))
+    plt.plot(range(len(adapted_real_close_prices)), adapted_real_close_prices, color='red', label='real close prices')
+    plt.plot(range(len(adapter_predicted_close_prices)), adapter_predicted_close_prices, color='green',
+             label='predicted close prices')
+    plt.xticks(range(0, len(real_close_prices), 500),
+               unified_stock_dataframe_with_date[FLAGS.company_ticker_symbol + '_Date'].loc[::500], rotation=45)
+    plt.xlabel('Date', fontsize=18)
+    plt.ylabel('Close Price Real', fontsize=18)
+    plt.legend(loc="upper left")
+
+    filename_path = FLAGS.output_directory + "/" + "company_predicted_close_real_price.png"
+    plt.savefig(fname=filename_path)
+
+
+def model_training(normalized_dataset, unified_stock_dataframe_with_date, close_min, close_max, close_mean, close_std):
     output_target_dataset = normalized_dataset[:, 3]  # it represents the 'Close' column
     training_ending_index = compute_training_split_index(normalized_dataset,
                                                          percentage_split=FLAGS.percentage_split)
@@ -364,60 +493,6 @@ def model_training(normalized_dataset):
 
     tf.keras.backend.set_floatx('float64')
 
-    '''
-    multi_step_model = tf.keras.models.Sequential()
-    multi_step_model.add(tf.keras.layers.Conv1D(filters=128,
-                                                kernel_size=3,
-                                                activation="relu"))
-    multi_step_model.add(tf.keras.layers.Dropout(0.5))
-    multi_step_model.add(tf.keras.layers.Conv1D(filters=64,
-                                                kernel_size=3,
-                                                activation="relu"))
-    multi_step_model.add(tf.keras.layers.Dropout(0.5))
-    multi_step_model.add(tf.keras.layers.Conv1D(filters=32,
-                                                kernel_size=3,
-                                                activation="relu"))
-    multi_step_model.add(tf.keras.layers.Dropout(0.5))
-    multi_step_model.add(tf.keras.layers.LSTM(64,
-                                              dropout=0.1))
-    multi_step_model.add(tf.keras.layers.Dense(32))
-    multi_step_model.add(tf.keras.layers.Dense(2))
-    '''
-    '''
-    multi_step_model = tf.keras.models.Sequential()
-    multi_step_model.add(tf.keras.layers.Conv1D(filters=128,
-                                                kernel_size=3,
-                                                activation="relu",
-                                                kernel_initializer=tf.keras.initializers.GlorotUniform()))
-    multi_step_model.add(tf.keras.layers.Dropout(0.5))
-    multi_step_model.add(tf.keras.layers.LSTM(128,
-                                              dropout=0.1,
-                                              return_sequences=True,
-                                              kernel_initializer=tf.keras.initializers.Orthogonal()))
-    multi_step_model.add(tf.keras.layers.LSTM(64,
-                                              dropout=0.1,
-                                              kernel_initializer=tf.keras.initializers.Orthogonal()))
-    multi_step_model.add(tf.keras.layers.Dense(32,
-                                               activation="relu",
-                                               kernel_initializer=tf.keras.initializers.Orthogonal()))
-    multi_step_model.add(tf.keras.layers.Dense(2))
-    '''
-    '''
-    multi_step_model = tf.keras.models.Sequential()
-    multi_step_model.add(tf.keras.layers.LSTM(512,
-                                              input_shape=x_train.shape[-2:],
-                                              return_sequences=True))
-    multi_step_model.add(tf.keras.layers.LSTM(256,
-                                              dropout=0.3,
-                                              return_sequences=True))
-    multi_step_model.add(tf.keras.layers.LSTM(128,
-                                              dropout=0.3,
-                                              return_sequences=True))
-    multi_step_model.add(tf.keras.layers.LSTM(64,
-                                              dropout=0.3))
-    multi_step_model.add(tf.keras.layers.Dense(16))
-    multi_step_model.add(tf.keras.layers.Dense(2))
-    '''
     multi_step_model = tf.keras.models.Sequential()
     multi_step_model.add(tf.keras.layers.LSTM(128,
                                               input_shape=x_train.shape[-2:],
@@ -426,11 +501,46 @@ def model_training(normalized_dataset):
     multi_step_model.add(tf.keras.layers.LSTM(64,
                                               dropout=0.3))
     multi_step_model.add(tf.keras.layers.Dense(32))
-    multi_step_model.add(tf.keras.layers.Dense(2))
+    multi_step_model.add(tf.keras.layers.Dense(1))
+    '''
+    multi_step_model = tf.keras.models.Sequential()
+    multi_step_model.add(tf.keras.layers.LSTM(128,
+                                              input_shape=x_train.shape[-2:]))
+    multi_step_model.add(tf.keras.layers.Dense(256,
+                                               activation='relu'))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.Dense(128,
+                                               activation='relu'))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.Dense(64,
+                                               activation='relu'))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.Dense(1))
+    '''
+    '''
+    multi_step_model = tf.keras.models.Sequential()
+    multi_step_model.add(tf.keras.layers.Conv1D(filters=64,
+                                                kernel_size=3,
+                                                activation="relu"))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.Conv1D(filters=32,
+                                                kernel_size=3,
+                                                activation="relu"))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.Conv1D(filters=16,
+                                                kernel_size=3,
+                                                activation="relu"))
+    multi_step_model.add(tf.keras.layers.Dropout(0.3))
+    multi_step_model.add(tf.keras.layers.LSTM(64,
+                                              dropout=0.2))
+    multi_step_model.add(tf.keras.layers.Dense(32))
+    multi_step_model.add(tf.keras.layers.Dense(1))
+    '''
 
     multi_step_model.compile(optimizer=tf.keras.optimizers.Adam(),
-                             loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                             metrics=['accuracy'])
+                             loss=mean_squared_error_loss,
+                             metrics=[tf.keras.metrics.MeanSquaredError(),
+                                      tf.keras.metrics.MeanAbsoluteError()])
 
     no_samples_per_epoch = math.ceil(len(x_train) / FLAGS.batch_size)
     multi_step_history = multi_step_model.fit(train_data,
@@ -446,14 +556,11 @@ def model_training(normalized_dataset):
                                                   verbose=1
                                               )])
     plot_train_history(multi_step_history, 'Multi-Step Training and Validation loss')
+    plot_train_history_real(multi_step_history, 'Multi-Step Training and Validation loss real', close_min, close_max, close_mean, close_std)
 
     best_checkpoint = tf.train.latest_checkpoint(FLAGS.checkpoints_directory)
     multi_step_model.load_weights(best_checkpoint)
 
-    probability_model = tf.keras.Sequential([multi_step_model,
-                                             tf.keras.layers.Softmax()])
-
-    '''
     i = 1
     for x, y in validation_data.take(5):
         save_plot([x[0][:, 3].numpy(), y[0].numpy(), multi_step_model.predict(x)[0]],
@@ -461,7 +568,7 @@ def model_training(normalized_dataset):
                   "Validation",
                   "Validation_" + str(i))
         i += 1
-    
+
     i = 1
     for x, y in train_data.take(5):
         save_plot([x[0][:, 3].numpy(), y[0].numpy(), multi_step_model.predict(x)[0]],
@@ -469,16 +576,22 @@ def model_training(normalized_dataset):
                   "Train",
                   "Train_" + str(i))
         i += 1
-    '''
+
     [training_accuracy, training_losses_percentage, training_wins_percentage] = compute_binary_accuracy(
-        x_train, y_train, probability_model)
+        x_train, y_train, multi_step_model)
     [validation_accuracy, validation_losses_percentage, validation_wins_percentage] = compute_binary_accuracy(
-        x_validation, y_validation, probability_model)
+        x_validation, y_validation, multi_step_model)
     print("Training accuracy {}% with losses {}% and wins {}%".format(training_accuracy, training_losses_percentage,
                                                                       training_wins_percentage))
     print(
         "Validation accuracy {}% with losses {}% and wins {}%".format(validation_accuracy, validation_losses_percentage,
                                                                       validation_wins_percentage))
+    # plot entire plot
+    all_predicted_prices = get_all_predicted_price(multi_step_model, normalized_dataset, FLAGS.past_history_no_days,
+                                                   FLAGS.future_prediction_no_days)
+    plot_company_predicted_plot(output_target_dataset, all_predicted_prices, unified_stock_dataframe_with_date)
+    plot_company_predicted_plot_real(output_target_dataset, all_predicted_prices, unified_stock_dataframe_with_date,
+                                     close_min, close_max, close_mean, close_std)
 
 
 def create_preliminary_directories():
@@ -509,20 +622,33 @@ def main(_argv):
     training_ending_index = compute_training_split_index(unified_stock_dataframe_with_date, FLAGS.percentage_split)
     dataset = unified_stock_dataframe.values
 
+    close_min = 0.0
+    close_max = 1.0
+    close_std = 1.0
+    close_mean = 0.0
     if FLAGS.normalize_data != 'none':
         # normalize dataset
         if FLAGS.normalize_data == 'min_max':
             print("Min-Max Normalization")
+            close_min = dataset[:training_ending_index, 3].min(axis=0)
+            close_max = dataset[:training_ending_index, 3].max(axis=0)
             dataset = normalize_data(dataset, training_ending_index)
         else:
             print("Interval Min-Max Normalization")
+            close_min = dataset[:training_ending_index, 3].min(axis=0) * 0.66
+            close_max = dataset[:training_ending_index, 3].max(axis=0) * 1.5
             dataset = normalize_data_increased_interval(dataset, training_ending_index)
     if FLAGS.standardize_data:
         print("Standardization")
-        dataset = standardize_data(dataset, training_ending_index)
-    plot_company_close_price(unified_stock_dataframe_with_date, dataset)
+        close_mean = dataset[:training_ending_index, 3].mean(axis=0)
+        close_std = dataset[:training_ending_index, 3].std(axis=0)
 
-    model_training(dataset)
+        dataset = standardize_data(dataset, training_ending_index)
+
+    plot_company_close_price(unified_stock_dataframe_with_date, dataset)
+    plot_company_close_price_real(unified_stock_dataframe_with_date, dataset, close_min, close_max,
+                                  close_mean, close_std)
+    model_training(dataset, unified_stock_dataframe_with_date, close_min, close_max, close_mean, close_std)
 
 
 if __name__ == "__main__":

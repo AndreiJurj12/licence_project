@@ -1,0 +1,1 @@
+python main.py --past_history_no_days=30 --future_prediction_no_days=5 --normalize_data=none --standardize_data=1 --use_technical_indicators=0 --use_stock_indices=0 --no_epochs=50
