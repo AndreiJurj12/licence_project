@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/client_nav_graph"
+    app:startDestination="@id/clientMainFragment">
+
+    <fragment
+        android:id="@+id/clientFavouritesFragment"
+        android:name="ubb.cscluj.financialforecasting.client.ClientFavouritesFragment"
+        android:label="Favourites"
+        tools:layout="@layout/fragment_client_favourites" />
+    <fragment
+        android:id="@+id/clientMainFragment"
+        android:name="ubb.cscluj.financialforecasting.client.ClientMainFragment"
+        android:label="Main"
+        tools:layout="@layout/fragment_client_main" />
+    <fragment
+        android:id="@+id/clientProfileFragment"
+        android:name="ubb.cscluj.financialforecasting.client.ClientProfileFragment"
+        android:label="User Profile"
+        tools:layout="@layout/fragment_client_user_profile" >
+        <action
+            android:id="@+id/action_clientProfileFragment_to_loginActivity"
+            app:destination="@id/loginActivity" />
+    </fragment>
+    <fragment
+        android:id="@+id/clientFeedbackFragment"
+        android:name="ubb.cscluj.financialforecasting.client.ClientFeedbackFragment"
+        android:label="Feedback"
+        tools:layout="@layout/fragment_client_feedback" >
+        <action
+            android:id="@+id/action_clientFeedbackFragment_to_clientFeedbackDetailFragment"
+            app:destination="@id/clientFeedbackDetailFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+    <activity
+        android:id="@+id/loginActivity"
+        android:name="ubb.cscluj.financialforecasting.login.LoginActivity"
+        android:label="activity_login"
+        tools:layout="@layout/activity_login" />
+    <fragment
+        android:id="@+id/clientFeedbackDetailFragment"
+        android:name="ubb.cscluj.financialforecasting.client.ClientFeedbackDetailFragment"
+        android:label="fragment_client_feedback_detail"
+        tools:layout="@layout/fragment_client_feedback_detail" >
+        <argument
+            android:name="feedbackMessageId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
+</navigation>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    style="@style/Widget.FinancialForecasting.CardView">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/company_name_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/sample_company_name"
+            style="?attr/textAppearanceHeadline6" />
+
+        <View
+            android:id="@+id/company_name_to_symbol_divider"
+            android:layout_below="@id/company_name_text_view"
+            style="?attr/dividerStyleHorizontal" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/company_symbol_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_company_symbol"
+            android:layout_below="@+id/company_name_to_symbol_divider"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:maxLines="1"
+            style="?attr/textAppearanceHeadline3" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_below="@id/company_name_to_symbol_divider"
+            android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:id="@+id/company_is_favourite_image_view"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_favorite_border"
+                android:tint="?attr/colorAccent"/>
+
+            <ImageView
+                android:id="@+id/company_ready_for_prediction_image_view"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_done"
+                android:tint="?attr/colorAccent" />
+        </LinearLayout>
+
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

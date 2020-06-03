@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/constraint_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/update_company_text_view"
+        style="?attr/textAppearanceHeadline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/update_company_string"
+        app:layout_constraintBottom_toTopOf="@id/input_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_name"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_marginBottom="16dp"
+        android:focusableInTouchMode="true"
+        app:boxBackgroundColor="?attr/colorSecondary"
+        app:boxStrokeColor="@color/color_list_input"
+        app:endIconDrawable="@drawable/ic_done"
+        app:endIconMode="custom"
+        app:endIconTint="@color/financialforecasting_green_500"
+        app:errorEnabled="true"
+        app:errorIconDrawable="@drawable/ic_error"
+        app:errorIconTint="@color/color_error"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@id/input_symbol"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/update_company_text_view"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:hint="@string/hint_name_mandatory"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="0dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_symbol"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_marginBottom="16dp"
+        android:focusableInTouchMode="false"
+        app:boxBackgroundColor="?attr/colorSecondary"
+        app:boxStrokeColor="@color/color_list_input"
+        app:endIconDrawable="@drawable/ic_done"
+        app:endIconMode="custom"
+        app:endIconTint="@color/financialforecasting_green_500"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@id/input_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/input_name"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_symbol"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:focusable="false"
+            android:inputType="textCapCharacters"
+            android:maxLines="1"
+            android:padding="0dp"
+            android:text="@string/sample_company_symbol" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_description"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_marginBottom="16dp"
+        android:focusableInTouchMode="true"
+        app:boxBackgroundColor="?attr/colorSecondary"
+        app:boxStrokeColor="@color/color_list_input"
+        app:endIconDrawable="@drawable/ic_done"
+        app:endIconMode="custom"
+        app:endIconTint="@color/financialforecasting_green_500"
+        app:errorEnabled="true"
+        app:errorIconDrawable="@drawable/ic_error"
+        app:errorIconTint="@color/color_error"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@id/input_founded_year"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/input_symbol"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_description"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:hint="@string/hint_description_mandatory"
+            android:inputType="textMultiLine"
+            android:maxLines="5"
+            android:minLines="3"
+            android:padding="0dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_founded_year"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_marginBottom="16dp"
+        android:focusableInTouchMode="true"
+        app:boxBackgroundColor="?attr/colorSecondary"
+        app:boxStrokeColor="@color/color_list_input"
+        app:endIconDrawable="@drawable/ic_done"
+        app:endIconMode="custom"
+        app:endIconTint="@color/financialforecasting_green_500"
+        app:errorEnabled="true"
+        app:errorIconDrawable="@drawable/ic_error"
+        app:errorIconTint="@color/color_error"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@id/input_url_link"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/input_description"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_founded_year"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:digits="0123456789"
+            android:hint="@string/hint_founded_year_mandatory"
+            android:inputType="numberDecimal"
+            android:maxLines="1"
+            android:padding="0dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_url_link"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_marginBottom="16dp"
+        android:focusableInTouchMode="true"
+        app:boxBackgroundColor="?attr/colorSecondary"
+        app:boxStrokeColor="@color/color_list_input"
+        app:endIconDrawable="@drawable/ic_done"
+        app:endIconMode="custom"
+        app:endIconTint="@color/financialforecasting_green_500"
+        app:errorEnabled="true"
+        app:errorIconDrawable="@drawable/ic_error"
+        app:errorIconTint="@color/color_error"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@id/input_url_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/input_founded_year"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_url_link"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:hint="@string/hint_url_link_mandatory"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="0dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_url_logo"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_marginBottom="16dp"
+        android:focusableInTouchMode="true"
+        app:boxBackgroundColor="?attr/colorSecondary"
+        app:boxStrokeColor="@color/color_list_input"
+        app:endIconDrawable="@drawable/ic_done"
+        app:endIconMode="custom"
+        app:endIconTint="@color/financialforecasting_green_500"
+        app:errorEnabled="true"
+        app:errorIconDrawable="@drawable/ic_error"
+        app:errorIconTint="@color/color_error"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@id/input_csv_data_path"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/input_url_link"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_url_logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:hint="@string/hint_url_logo_mandatory"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="0dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_csv_data_path"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_marginBottom="16dp"
+        android:focusableInTouchMode="false"
+        app:boxBackgroundColor="?attr/colorSecondary"
+        app:boxStrokeColor="@color/color_list_input"
+        app:endIconDrawable="@drawable/ic_done"
+        app:endIconMode="custom"
+        app:endIconTint="@color/financialforecasting_green_500"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@id/layout_toggle_ready_prediction"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/input_url_logo"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_csv_data_path"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:focusable="false"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="0dp"
+            android:text="@string/default_csv_data_path" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_toggle_ready_prediction"
+        android:layout_marginStart="@dimen/horizontal_gutters"
+        android:layout_marginEnd="@dimen/horizontal_gutters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_csv_data_path"
+        app:layout_constraintBottom_toTopOf="@id/update_button"
+        android:orientation="horizontal">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ready_for_prediction_label"
+            style="?attr/textAppearanceHeadline5"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/ready_for_prediction_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/update_button"
+        style="@style/Widget.FinancialForecasting.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/update_message"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_toggle_ready_prediction" />
+
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/loading_progress_bar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:theme="@style/Widget.FinancialForecasting.ProgressBar"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

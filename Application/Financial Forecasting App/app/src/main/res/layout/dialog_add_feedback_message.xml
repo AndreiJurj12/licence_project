@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/message"
+            android:src="@drawable/ic_message"
+            android:tint="?attr/colorAccent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/add_new_feedback_message"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:textAppearance="?attr/textAppearanceHeadline4" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/title_divider"
+        style="@style/Widget.FinancialForecasting.Divider.Horizontal"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:orientation="vertical">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/message_request_label_text_view"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/message_request_label"
+            android:textAppearance="?attr/textAppearanceHeadline6" />
+
+        <View
+            android:id="@+id/message_response_divider"
+            style="@style/Widget.FinancialForecasting.Divider.Horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_request"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/horizontal_gutters"
+            android:layout_marginEnd="@dimen/horizontal_gutters"
+            android:layout_marginTop="8dp"
+            android:focusableInTouchMode="true"
+            app:boxBackgroundColor="?attr/colorSecondary"
+            app:boxStrokeColor="@color/color_list_input"
+            app:endIconDrawable="@drawable/ic_done"
+            app:endIconMode="custom"
+            app:endIconTint="@color/financialforecasting_green_500"
+            app:errorEnabled="true"
+            app:errorIconDrawable="@drawable/ic_error"
+            app:errorIconTint="@color/color_error"
+            app:hintEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/message_request_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="@string/message_request_mandatory"
+                android:inputType="textMultiLine"
+                android:maxLines="10"
+                android:textAppearance="?attr/textAppearanceBody1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+
+    <View
+        android:id="@+id/buttons_divider"
+        style="@style/Widget.FinancialForecasting.Divider.Horizontal"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancel_button"
+            style="@style/Widget.FinancialForecasting.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:gravity="center"
+            android:text="@string/cancel" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/send_button"
+            style="@style/Widget.FinancialForecasting.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="center"
+            android:text="@string/send" />
+    </LinearLayout>
+</LinearLayout>

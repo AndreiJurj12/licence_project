@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    style="@style/Widget.FinancialForecasting.CardView">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/message_creation_date_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:text="@string/message_creation_date_label"
+            style="?attr/textAppearanceHeadline6" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/message_creation_date_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/sample_creation_date"
+            android:layout_toEndOf="@+id/message_creation_date_label"
+            style="?attr/textAppearanceHeadline6" />
+
+        <View
+            android:id="@+id/date_to_message_divider"
+            android:layout_below="@id/message_creation_date_label"
+            style="?attr/dividerStyleHorizontal" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/message_request_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_message_request"
+            android:layout_below="@+id/date_to_message_divider"
+            android:layout_marginTop="8dp"
+            android:maxLines="3"
+            style="?attr/textAppearanceBody1"
+            android:ellipsize="end"/>
+
+        <ImageView
+            android:id="@+id/image_solved_hint_image_view"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_done"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/message_request_text_view"
+            android:tint="?attr/colorAccent" />
+
+    </RelativeLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

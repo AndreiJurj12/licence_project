@@ -1,0 +1,57 @@
+<resources>
+    <style name="AppTheme" parent="FinancialForecasting.DayNight" />
+
+    <!--Components-->
+
+    <!--Navigation Drawer-->
+    <style name="Widget.FinancialForecasting.NavigationView" parent="Widget.MaterialComponents.NavigationView">
+        <item name="itemTextAppearance">?textAppearanceBody2</item>
+    </style>
+
+
+    <style name="Widget.FinancialForecasting.CardView" parent="Widget.MaterialComponents.CardView">
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+    </style>
+
+
+    <style name="Widget.FinancialForecasting.Button.OutlinedButton" parent="@style/Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="iconTint">?attr/colorPrimaryVariant</item>
+        <item name="android:textColor">@color/color_primary</item>
+        <item name="android:textAppearance">?attr/textAppearanceButton</item>
+    </style>
+
+    <style name="Widget.FinancialForecasting.Button.IconOnly" parent="@style/Widget.MaterialComponents.Button.TextButton.Icon">
+        <item name="iconPadding">0dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconTint">?attr/colorPrimaryVariant</item>
+    </style>
+
+
+    <style name="Widget.FinancialForecasting.Snackbar" parent="Widget.MaterialComponents.Snackbar">
+        <item name="android:backgroundTint">@color/color_on_background</item>
+    </style>
+
+
+    <style name="Widget.FinancialForecasting.ProgressBar" parent="@style/Widget.AppCompat.ProgressBar">
+        <item name="colorAccent">@color/financialforecasting_orange_300</item>
+    </style>
+
+
+    <attr name="dividerStyle" format="reference"/>
+    <attr name="dividerStyleHorizontal" format="reference"/>
+    <attr name="dividerStyleVertical" format="reference"/>
+    <style name="Widget.FinancialForecasting.Divider" parent="">
+        <item name="android:background">@color/color_primary_variant</item>
+    </style>
+    <style name="Widget.FinancialForecasting.Divider.Horizontal" parent="Widget.FinancialForecasting.Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+    </style>
+    <style name="Widget.FinancialForecasting.Divider.Vertical" parent="Widget.FinancialForecasting.Divider">
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+
+</resources>
