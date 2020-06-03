@@ -1,3 +1,5 @@
+The following chapter will present the main points regarding the problem solved by this thesis. Initially, key concepts and fundamentals will be introduced in order to gain the minimum financial information. A short summary will introduce after the generic techniques used in stock market prediction alongside some difficulties. In the second main section, a scientific approach will be taken in to offer the problem definition and its variations and some methodologies regarding the training data. Furthermore, the proposed approach will be detailed alongside some necessary theoretical aspects and finally finishing it with the obtained results.
+
 \section{Stock Market}
 
 \subsection{Stock Market Fundamentals}
@@ -36,12 +38,12 @@ However, investors and researchers have disputed the hypothesis both empirically
 \subsection{Problem definition}
 Stock market prediction is the act of trying to determine the future value of a company stock or other financial instrument traded on an exchange. In terms of a general scientific category, the problem will be evaluated from the perspective of a time series. Time series analysis and time series forecasting are the two linked activities which are done over a time series. However, while time series analysis is mostly linked to statistics, time series forecasting has evolved as being mostly referred with machine learning in mind. In comparison with other problems, time series require more attention regarding the processing of data since it has a natural time ordering which must not be broken in any way.
 
-The problem of stock market prediction may also be split depending on what information we want to obtain: regression if we want a continuous output variable such as the closing price of some stock or classification if we only want a hint regarding the future trend. This thesis will try to use both categories for different time horizons such as 1-day, 3-day, 5-day etc. For regression we will have two main versions:
+The problem of stock market prediction may also be split depending on what information we want to obtain: regression if we want a continuous output variable such as the closing price of some stock or classification if we only want a hint regarding the future trend. This thesis will try to use both categories for different time horizons such as 1-day, 3-day, 5-day etc. For regression there are two main versions from which we will choose only the first:
 \begin{itemize}
     \item single point in future of the closing price for a company stock
     \item set of points corresponding to each day in the time horizon - allowing us to see the general flow chart of the company stock price
 \end{itemize}
-For the classification category, we will split it in three or five categories (not decided yet): major decline, minor decline, stagnation, minor increase, major increase. Based on all this variants, we are going to compare and decide how should we interpret all results into an automated algorithm which decides whether to buy or sell.
+For the classification category, in terms of methodology this thesis will focus only the binary classification version ("buy/sell"). Other introduced classes such as stagnation may be defined, but they are rather hard to define and split based on other parameters. Based on all this variants, we are going to compare and decide how should we interpret all results into an automated algorithm which decides whether to buy or sell.
 
 \subsection{Methodology in training data}
 The following subsection will present the details and methodologies behind choosing and preparing the data for future training. As mentioned already in a previous section, stock market prediction may make use of various information in order to attempt forecasting future prices depending on many factors such as the time horizon.
@@ -56,7 +58,38 @@ Because we are not going to predict intraday evolution of prices (which is usual
 \end{enumerate}
 Based on this data, we could theoretically have a complete technical analysis taking into account only the company's past data. However, we will also add at least one stock market index representative for the market from which the company comes from. Stock market indexes can be seen as powerful indicators for global and country-specific economies. Because we are going to use stock data from popular American companies, we'll choose from S\&P500, DowJonesIndustrial and NasdaqComposite. Using stock market indexes should help the network getting a grip of the general economic trend in addition to only the company's past data which may or may not reflect a lot the past economic trend of the general economy. In terms of actual data that is obtained from these stock market indexes, we are talking about the same five measurements mentioned earlier, but at the level of that stock market index (which is usually seen as a conglomerate of the most important companies of that market). It should be noted that is totally possible to trade only stock market indexes as opposed to trading individual company stocks.
 
-In terms of preprocessing the data, we must standardize in order to aid the model in learning the relevant futures. Due to the fact that we evaluate a time-series problem, a particular attention should be given to the split between training and validation data. Because the validation data is considered to represent the unknown future, the strategy on which we standardize the data must be used only on the training data and applied with the same parameters obtained on the validation data. We are going to experiment with two different methodologies. First, with classic standardization which involves moving each feature values to a mean close to 0 and a standard deviation close to 1. Secondly, we are going to experiment with a min-max scaling which brings a set of values into the interval $[-1, 1]$. It is clear that in both cases, the validation data would not necessary respect the same strict results in the end because the validation data may contain values outside the training data set, but it still is highly important to bring the features much closer since we use data with various interval differences between them.
+In addition to those, we will attempt to incorporate some technical indicators in order to search whether the introduction of these features in the input data. They represent mathematical calculations based on some historic data (price, volume) and are aimed to aid the forecasting of future trends. They are widely used in categories such as pattern recognition with intraday trading.
+
+
+In terms of preprocessing the data, we must standardize or normalize in order to aid the model in learning the relevant futures. Due to the fact that we evaluate a time-series problem, a particular attention should be given to the split between training and validation data. Because the validation data is considered to represent the unknown future, the strategy on which we standardize the data must be used only on the training data and applied with the same parameters obtained on the validation data. We are going to experiment with two different methodologies. First, with classic standardization which involves moving each feature values to a mean close to 0 and a standard deviation close to 1. Secondly, we are going to experiment with a min-max scaling which brings a set of values into the interval $[-1, 1]$. It is clear that in both cases, the validation data would not necessary respect the same strict results in the end because the validation data may contain values outside the training data set, but it still is highly important to bring the features much closer since we use data with various interval differences between them. For that reason, in terms of normalization we might choose an increased min-max interval on the training data to cover possible variations in the future data to some degree.
+
+\subsection{Related Work}
+
+Before diving into individual papers and results, we will present a recent state of the domain based on a literature review. Citing \cite{shah2019stock}, we can group all the major techniques and recent advancements currently used in stock market prediction in five categories: statistical, pattern recognition, machine learning, sentiment analysis and hybrid. They mostly fall under the broader category of technical analysis, but a small portion of them might include elements of fundamental analysis also. In the following pages, we will focus on recent papers from all categories apart from the statistical one due to the following reasons: most techniques were used for a long time fine-tuning them only lately and there is emerging a new consensus that with enough care artificial intelligence techniques such as support-vector machine, neural networks may cover everything a statistical regression may compute. Before diving into them, we would like to mention that the results should not be compared directly due to the large degree of variety in terms of data and types of measurements for results.
+
+\subsubsection{Pattern Recognition}
+
+Pattern recognition has started as an activity to recognize patterns automatically which were usually considered important by experienced investors rather similar with the advancement in visual processing. The patterns are used mostly to identify future trends and are usually used during short periods of time. At its core, most of the work regarding pattern recognition can be seen as a subclass of template matching, but lately other concepts were introduced to improve the results due to the volatility of the market such as perceptually important points (PIP).
+
+The first paper we are going to cite is "A dynamic trading rule based on filtered flag pattern recognition for stock market price forecasting" \cite{arevalo2017dynamic}. The flag pattern is considered to be a relatively common pattern found in the stock market. It consists of an initial clear trend followed by a consolidation period which is also range bound and it ends with the continuation of the initial trend. The flag can be observed as the consolidation period which takes a zigzag movement and offers a flag-like shape due to the bounded range movement. The paper distinguished itself through a variety of filters applied alongside a win-loss strategy while offering a relatively robust mechanism. The paper evaluated the trading on a large period on the DJIA index which stands for Dow Jones Industrial Average - a famous and popular index in the United States incorporating stocks from 30 different companies and representing a valuable resource to study the general trend of the market. They have used both short and medium terms: 15min and 1 day, while obtaining a lower risk overall with regard to previous similar research. An important aspect in their research besides the flag pattern was given by the usage of a very well-known technical indicator: exponential moving average (EMA). Moving averages are widely used in the stock market to reduce the noise inflicted in the market daily, while maintaining a general trend. Exponential moving average is an improved weighted version of the classical one, offering more relevance to recent prices and less relevance to older data. In terms of results, the accounted for the percentage return (profit) which has reached in the best case scenario a 280\% return.
+
+The other paper that we are mentioning for this category is "Pattern Matching Trading System Based on the Dynamic Time Warping Algorithm" \cite{kim2018pattern}. One key feature of 'dynamic time warping' techniques is that they do not necessarily require a strict resemblance structure between the template and the actual pattern found. The speed in the stock market can be referred to different trend curves amplitudes which at their core are almost alike when eliminating some factor. The experiment determined the entry and exit points of trading by matching the daily index futures time series data with fixed patterns using dynamic time warping. There was experimentation with two different sets of fixed patterns - length 13 or 27 - using different training periods (sliding windows) and incorporating some exit-loss strategy. An interesting aspect to be mentioned is the time horizons used along the research while employing a relatively new concept: each trading day period was split in two groups. The morning was reserved for the trading data and acquiring information for the pattern matching, while the afternoon was used for the actual trading. In terms of results, they obtained an annualized return of 19.17, while employing a known measurement in finance: the 'sharpe ratio' - characterizes how well the expected return of an asset compensates the investor for the risk - obtaining a value of 0.94.
+
+\subsubsection{Machine learning}
+
+Machine learning has greatly evolved in the recent decade due to the evolution of computational cost and techniques, but it was present in the financial sector for a lot longer starting from support-vector machines, decision trees and progressively evolving to random forests, neural networks and so on. Both supervised and unsupervised learning is largely studied across. In the following papers, we will talk more in detail about recent techniques which incorporate deep learning methodologies. Deep learning has been the staple improvement in recent years regarding object detection or speech recognition working on the assumption of automated incremental feature detection. We are going to cite a recent paper summarizing focused deep learning in finance, offering a spectrum regarding the current trending movement \cite{sezer2020financial}. As a standard, we may observe that the time series nature of our problem influenced the decision in using large margin recurrent neural networks models - mostly LSTM and GRU - which are known to maintain a context and create some long-term dependencies.
+
+In order to present the power of basic RNN structures, we are going to choose two small papers regarding prediction of the stock market: \cite{di2017recurrent} and \cite{roondiwala2017predicting}. The first study targeted the comparison between various (simple) neural networks structures for predicting Google assets on a five year time frame. The study requires minimum preprocessing of the OCLHV data with a min-max scaler. The past data window used consists of 30 days and found out that in general LSTM outperformed classic RNN or GRU, reaching a 72\% accuracy binary prediction for a 5 day time horizon. The second study targeted a price regression prediction in comparison to the first one using the history data of the 'Nifty 50' stock market index - the representative index for the Indian stock market. Six years of OCLHV data was used with standard normalization as preprocessing and Root Mean Square Error (RMSE) was used as the result measurement with a testing (validation) value of 0.00859.
+
+Another subcategory present for stock market prediction was the usage of reinforcement learning. Instead of price prediction, reinforcement learning uses experience gained through interacting with the environment and evaluative feedback to improve the ability of making decisions. As an addition, deep learning was introduced to occur along allowing for improved features creating deep reinforcement learning (DRL). We are going to mention here a recent paper that implemented a multi-objective DRL approach for intraday trading \cite{si2017multi}. In order to address the high noise and non-stable financial data received when exploring the unknown environment, they chose a multi-objective deep reinforcement learning (MODRL) to simultaneously explore the environment, while recurrently making decisions. The neural network is split in two major parts: a set of four fully connected layers responsible for learning the features from financial data while reducing the uncertainty of the input data and a two-layer structured part for implementing the self-taught reinforcement trading composed of an LSTM and a fully connected layer. The multi-objective refers to the two objectives which are measured to obtain the performance of the model: the profit and associated risk. In addition, dropout techniques were used in the learning future part of the model to reduce overfitting. The model was tested on three different stock market indexes from China and when compared to other similar reinforcement learning techniques, managed to achieve improved performance overall with a 'sharpe ratio' of approximately 0.11.
+
+\subsubsection{Sentiment analysis}
+
+Sentiment analysis is a very recent subcategory in comparison with others due to many factors such as Internet consumption skyrocketing, social media and capability to process big data. In the stock market, sentiment analysis works on the assumption that short-term movements and fluctuations are largely influenced by the 'investors' feelings' and which can be seen empirically in many moments, most prevalent in 'panic selling'. Due to algo-trading which dominates more and more the stock market there have been numerous occasions lately when a set of automated decisions suddenly selling a specific asset would cause a chain reaction in which more and more investors will continue replicating the same behaviour causing a crash for that particular asset. In terms of data, two major sources are usually chosen: financial news from respected news outlets or large amounts of posts from Twitter. It is clear that while the news are on average more professional and correct, they are also delayed to a point in which the effect has been already observed in the market or on social media.
+
+Further, we are going to present and cite the following research paper: "Big Data: Deep Learning for financial sentiment analysis" \cite{sohangir2018big}. Instead of data mining for the most relevant features, they have decided to use a deep learning model that will learn of its own the relevancy of each information. As data, they have received permissions from a specialized company StockTwits Inc. to access their dataset which contain historical prices, buying or selling recommendations, but also access to a specialized network of people with investment knowledge. They have found difficulties in processing the data and filtering messages from top investors versus average ones because many messages were not labeled entirely. They have compared results from several architectures containing recurrent neural networks (LSTM) and convolutional neural networks (CNN). In addition, they have also used word2vec - a deep learning technique which produces high-dimensional vector representation of each word or document. Surprisingly enough, CNN was by far the most performant model reaching a 90\% accuracy, while the other mentioned techniques reaching accuracies close to 70\% and very similar to logistic regression. A possible explanation might be that CNN are already recognized for finding features in Big Data and variations may be considered with LSTM being only a secondary level part in the network.
+
+Hybrid methodologies have always been a predictable continuation of the classic techniques in order to obtain better results. As already seen in previous mentioned papers, while the general methodology can be seen in one category, there is already a decent chance that other techniques were incorporated more and less. Sentiment analysis will definitely become more and more incorporated along more 'unbiased' techniques like pattern matching in order to gain a balanced perspective as long as there will be public development of open and good quality data sources.
 
 \subsection{Proposed approach}
 Financial time forecasting has been the top problem of computational intelligence for both academic financial researchers and industry investors due to its broad implementation areas and impact. As mentioned previously, many techniques and methodologies have evolved throughout the recent decades alongside the exponential growth in computational power. Machine learning has become one of the headlines in computer science and more recently a sub-domain of machine learning, deep learning, has started to receive the most attention of the industry. Even though deep learning has been recognized as the next breakthrough in many problems such as speech recognition, image recognition, natural language processing and many more, in terms of time series forecasting and more specifically stock market prediction the research is still continuously developing. The current state of art is a lot harder to define since there are many different approaches to what is going to be forecast and how those results should be incorporated in a strategy that would maximize the profit and minimize the loss. Consequently, this thesis will bring a clearer comparison between similar approaches in terms of output results and strategies, but keeping a consistent approach in terms of the actual deep learning model used.
@@ -145,8 +178,6 @@ The interaction between the hidden state, the cell state and the input is dictat
 Original picture (edited after): https://colah.github.io/posts/2015-08-Understanding-LSTMs/
 \end{flushright}
 
-\newpage
-
 \paragraph{Forget Gate}\mbox{} 
 
 \vspace{5mm}
@@ -223,3 +254,93 @@ The other citation used is "LSTM: A Search Space Odyssey" \cite{greff2016lstm} w
 
 
 \subsection{Results}
+
+We are going to present initially some comparisons which will then drive our further possible improvements. We will evaluate the problem from a single point prediction in the future and binary classification. Some of the variations used will be:
+
+\begin{itemize}
+    \item past data interval - 30 or 180 days
+    \item Used data:
+        \begin{itemize}
+            \item only company OCHLV data
+            \item company and three major stock indexes OCHLV data
+            \item company and three major stock indexes OCHLV data and a set of technical indicators for the company
+        \end{itemize}
+   \item Data preprocessing:
+        \begin{itemize}
+            \item Data normalization - MinMaxScaler on each column
+            \item Data standardization - $(x - mean(x)) / std(x)$
+        \end{itemize}
+\end{itemize}
+
+The sample data period is 1990-2005 on JPMorgan Chase company assets and training-validation is split in 80-20 manner. The future horizon interval for prediction will be set to 5 days. The following network architectures will be used as a starting point and we'll work with the better version of the two:
+
+\begin{algorithm}[H]
+\caption{Network Architecture I}
+\label{networkarchitectureI}
+\lstinputlisting[language=Python]{algorithms/architecture1.py}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Network Architecture II}
+\label{networkarchitectureII}
+\lstinputlisting[language=Python]{algorithms/architecture2.py}
+\end{algorithm}
+
+Based on the experimental results, we have found out that:
+\begin{itemize}
+    \item MinMax normalization reduces the loss more significantly than standardization when evaluating the single point prediction version (\ref{fig:standardizationnormalizationpreprocessing})
+    \item The addition of stock market indexes decreases the overall performance from just using the company data
+    \item Architecture I seems to slightly outperform Architecture II while benefiting from technical indicators data
+    \item Training on the classification matter doesn't improve by a respectable margin the results on single point prediction results converted to the same accuracy.
+\end{itemize}
+
+In the following table we will present the results of the single point prediction + converted accuracy for architecture I on 5 day-future prediction with MinMax normalization: 
+
+\begin{center}
+Architecture I 180 past data days
+\resizebox{\textwidth}{!} {%
+     \begin{tabular}{||c c c c||} 
+     \hline
+     Metric & Company\_Data & Company\_WithIndex & Company\_WithIndex\_AndTechnical \\
+     \hline\hline
+     TrainingLoss & 0.0016  & 0.0016  & 0.0009  \\
+     \hline
+     ValLoss & 0.0003 & 0.0005 & 0.0004 \\
+     \hline
+     TrainingAccuracy & 54.15\% & 55.69\% & 56.21\% \\
+     \hline
+     ValidationAccuracy & 52.09\% & 46.62\% & 53.05\% \\
+     \hline
+    \end{tabular}
+}
+\end{center}
+
+The following figure is the comparison between the different preprocessing methods mentioned with the converted loss:
+
+\begin{figure}[H]
+\begin{subfigure}{0.47\textwidth}
+\includegraphics[width=0.9\linewidth, height=5cm]{images/CompanyLossStandardization.png} 
+\caption{Company Data Standardization}
+\label{fig:companydatastandardization}
+\end{subfigure}
+\begin{subfigure}{0.47\textwidth}
+\includegraphics[width=0.9\linewidth,height=5cm]{images/CompanyLossNormalization.png}
+\caption{Company Data Normalization}
+\label{fig:companydatanormalization}
+\end{subfigure}
+\caption{Comparison between Standardization and Normalization Data Preprocessing effects on the losses}
+\label{fig:standardizationnormalizationpreprocessing}
+\end{figure}
+
+Lastly, here is the evolution of the predicted price versus the real one overtime in the current stage:
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=8cm]{images/InitialCompanyGraphPrediction.png} 
+\caption{Company OverTime Prediction First Experimental Results}
+\label{fig:companyovertimeprediction}
+\end{figure}
+
+Based on the results obtained until now, we are going to experiment further with architectures similar with \ref{networkarchitectureI}, MinMax normalization, specific use of technical indicators and various future time horizons and past data intervals.
+
+

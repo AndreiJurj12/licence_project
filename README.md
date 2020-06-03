@@ -5,6 +5,7 @@
 
 ----
 ## changelog
+* 03-Jun-2020 updated all technologies + initial results + related work + small improvements
 * 10-May-2020 updated android + spring technologies; added data preprocessing
 * 05-May-2020 updated training code + binary classification version for accuracy measurement
 * 05-May-2020 updated documentation 

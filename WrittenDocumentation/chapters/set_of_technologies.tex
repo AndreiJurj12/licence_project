@@ -2,6 +2,24 @@ In the next chapter, this thesis will present the main technologies used. The li
 
 \section{Tensorflow}
 
+Tensorflow is a free and open-source software library created originally developed by researchers and engineers working on the Google Brain team within Google's Machine Intelligence Research organization to conduct machine learning and deep neural networks research. It steadily evolved and become one if not the most popular framework to develop machine learning.
+
+Tensorflow is a complex framework containing many layers of abstraction and components to link between different stages of the training and production. It works with other libraries in collaboration in order to facilitate an easier workflow. For our specific problem regarding stock data, Pandas and NumPy will be used along to prepare the data stored in CSV files for the actual model. Lastly, Matplotlib will be used along for generating the initial graphs and plots necessary for comparing different models and methodologies.
+
+NumPy is a library for the Python programming language designed for adding suport to large, multi-dimensional arrays along a large collection of high-level mathematical functions to operate on these arrays. While limiting some of the classic functionalities with array, the library is a staple when it comes to efficient numerical computing in Python.
+
+Pandas is another Python library specialized in data manipulation and data analysis. In particular, it helps tremendously in manipulating numeric tables and time series problems. It is highly customizable and offers seamless integration with CSV files. Its main concept is called DataFrame and represent a 2-dimensional labeled data structure with columns of potentially different types. It provides a large variety of functions built-in such as mean, maximum, minimum or standard deviation, slicing requiring few lines of code to create or normalize data from a source. 
+
+\subsection*{Tensorflow Structure}
+Under the hood, Tensorflow works based on the concept of the data flow graph as its computation model. A data flow graph is a model of a program with no conditionals. In a high-level programming language, a code segment with no conditionals—more precisely, with only one entry and exit point—is known as a basic block\cite{levitin2012introduction}. Its main usage is the ease offered in terms of distributing computation across CPUs and GPUs. 
+
+The nodes of the graph are represented by operations, while the edges are tensors. The main Tensorflow entities are: graph, operation, tensor and session. In recent updates, the session is not observed in the foreground, but the other components remain present. As previously mentioned, the graph is build as a set of Operation objects. Each Operation represents a graph node which stems for a unit of computation (addition, multiplication etc.). It takes a tensor as an input and produces a tensor as an output. The tensor is a generalization of vectors or matrices of higher dimensions. They do not represent or hold any particular value produced by an operation in the initial graph. They are used to define the type of value and dimensions acting like a placeholder until the actual execution.
+
+\subsection*{Keras}
+
+Keras is an open-source neural-network library written in Python. It was designed as a high-level interface allowing for fast experimentation of deep neural networks. Tensorflow is supporting its own implementation of Keras fully integrated with its other components.
+
+At its core, Keras offers numerous implementations for commonly used neural-networks building blocks such as layers, objectives, activating functions, loss functions. In addition to standard neural networks, it has support for convolutional and recurrent neural networks. Lastly, utility layers such as dropout, batch normalization or pooling can be easily added.
 
 \section{Spring Framework}
 

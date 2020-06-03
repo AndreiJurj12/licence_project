@@ -1,3 +1,7 @@
+"Application Development" chapter will focus on presenting the taken steps during the software development stage. The flow will be progressive beginning with the necessary requirements and specifications from a stakeholder perspective. Further, after a clear use-case template will be created we will move to the next and most critical stage: the design. The design phase will expose the initial high-level architecture decided in order to facilitate different aspects such as reliability or performance. Following the initial high-level architecture, a more fine-grained and detailed presentation will occur regarding the elements and components from the application. A testing methodology will be added and decided to ensure a quality control. Finally, a linking between design and implementation will focus on the main functionalities of the application which expose a more complicated user-system interaction.
+
+
+
 \section{Application Planning and Requirements}
 \subsection{Requirements and Specifications}
 In the next subsection, this thesis will present a brief discussion regarding the possible stakeholder requirements alongside a more detailed specification list from the development perspective.
@@ -37,20 +41,6 @@ From the development perspective we have decided a list of specifications which 
     \item Request the system to update financial data available with new request from external API
 \end{itemize}
 
-\subsection{Application Architecture}
-In order to facilitate accessibility for the application, the decided architecture is of type client-server where the client application will be a mobile application. This architecture was chosen with multiple reasons in mind while being known for its flexibility and allowing easily addition of different types of clients if necessary.
-
-The need for a dedicated server (of sets of servers) stems firstly from the amount of financial data used for predictions. Bundling large amounts of data with a portable mobile application is unacceptable. Moreover, this data needs frequent updates from known sources which have free API-s available, but with some low limits of requests per day. In addition, a large amount of neural networks will be maintained for different goals, time-horizons and companies. While nowadays mobile phones are becoming more and more powerful being capable of running some machine learning tasks, still most of the work is done in the cloud on dedicated servers. Lastly, moving the computational cost from the client to a server allows the application to be run on a larger variety of devices which otherwise might have been insufficient.
-
-In order to facilitate possible integration in modern cloud systems, we are going to split the server computation cost in two major parts. The first part which will directly communicate with the client application will contain the entire business logic necessary to address most features which do not require any sort of prediction. The second part will behave similar to a Cloud API service for machine-learning operations regarding stock market prediction. It will be standalone and totally separated from the first part, maintaining only the network architectures already trained and expose a REST API for the business logic server to request any computations regarding prediction. The following picture attached contains a visual description of what has been discussed.
-
-\begin{figure}[H]
-\centering
-\includegraphics[height=12cm]{images/HighLevelArchitecture.png} 
-\caption{High Level Architecture of the Application}
-\label{fig:highlevelarchitecture}
-\end{figure}
-
 
 \subsection{Abstract Design - Use Case Diagram}
 In the following subsection we are going to present the associated Use Case Diagram with the previously specified requirements specification. Two actors have been found along: the client and the admin. There are some use cases which belong to both, while most of them are separate.
@@ -64,6 +54,21 @@ In the following subsection we are going to present the associated Use Case Diag
 
 
 \section{Application Design Phase}
+
+\subsection{Application Architecture}
+In order to facilitate accessibility for the application, the decided architecture is of type client-server where the client application will be a mobile application. This architecture was chosen with multiple reasons in mind while being known for its flexibility and allowing easily addition of different types of clients if necessary.
+
+The need for a dedicated server (of sets of servers) stems firstly from the amount of financial data used for predictions. Bundling large amounts of data with a portable mobile application is unacceptable. Moreover, this data needs frequent updates from known sources which have free API-s available, but with some low limits of requests per day. In addition, a large amount of neural networks will be maintained for different goals, time-horizons and companies. While nowadays mobile phones are becoming more and more powerful being capable of running some machine learning tasks, still most of the work is done in the cloud on dedicated servers. Lastly, moving the computational cost from the client to a server allows the application to be run on a larger variety of devices which otherwise might have been insufficient.
+
+In order to facilitate possible integration in modern cloud systems, we are going to split the server computation cost in two major parts. The first part which will directly communicate with the client application will contain the entire business logic necessary to address most features which do not require any sort of prediction. The second part will behave similar to a Cloud API service for machine-learning operations regarding stock market prediction. It will be standalone and totally separated from the first part, maintaining only the network architectures already trained and expose a REST API for the business logic server to request any computations regarding prediction. The following picture attached contains a visual description of what has been discussed.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=10cm]{images/HighLevelArchitecture.png} 
+\caption{High Level Architecture of the Application}
+\label{fig:highlevelarchitecture}
+\end{figure}
+
 
 \subsection{Exposed Prediction REST API}
 
@@ -92,7 +97,7 @@ Further, we are going to split the main blocks into separate layers to further a
 
 \begin{figure}[H]
 \centering
-\includegraphics[height=11cm]{images/BusinessServerArchitecture.png} 
+\includegraphics[height=7cm]{images/BusinessServerArchitecture.png} 
 \caption{Business Server Logic Architecture}
 \label{fig:businessserverarchitecture}
 \end{figure}
@@ -104,6 +109,26 @@ Created with: https://creately.com/
 
 
 \subsection{Client Mobile Application}
+
+As the last layer presented in the application architecture and the one directly interacting with the user, we will discuss about the necessary steps required for the mobile application. As mentioned in the previous chapter, we are going to make use of the latest facilities and paradigms offered by the Android Architecture Components library incorporated in Android Jetpack.
+
+Based on the recommended methodologies offered along the library, we are going to choose the advocated generic design pattern in terms of structuring the app: Model-View-ViewModel (MVVM). MVVM is a software architectural pattern that facilitates the separation of the development of the graphical user interface (the view) from the business logic (the model). The ViewModel acts as an intermediary layer between being responsible for data transformations from the model and exposing possible data binding logic between the view and the viewmodel. At its core MVVM has many similarities with another software architectural pattern Model-View-Presenter (MVP), but there is one major difference. While in MVP the presenter sits at the same level with the views and there is a one-to-one mapping between the view and the presenter, in MVVM there is not such a dependency. Instead, the MVVM exposes an available data binding on which the view connects and observe creating a small code footprint in terms of updating the UI.
+
+While being a totally supported architecture, MVVM couldn't have been easily supported in Android before Architecture Components library. The main reason stems from the lifecycle of an Android application and its UI components (activity, fragment) which are often destroyed due to configuration changes or other events. With that motivation in mind, the ViewModel class was created for storing and managing UI-related data in a lifecycle conscious way while surviving to many types of events. Moreover, the ViewModel offers a separation for executing asynchronous tasks or sharing data between fragments which will further help us in the process. In the following paragraphs, we are left to discuss the components of the View and Model.
+
+Starting with the view, the structure of the UI 'screens' will be composed of few activities and more fragments per activity striving to the proposed 'single-activity' methodology recommended by Google. We will have a total of three activities across the entire app: Login, Client and Admin. The decision is made in order to split the responsibilities of each role discussed in the requirements and a separate logic for the login-register process. Each activity will be composed of multiple fragment, each representing a certain UI screen. In order to facilitate a clear and organised navigation back and forth while incorporating necessary arguments, we are going to make use of the Navigation Architecture component. It consists of three key components: the navigation graph, the navigation host and the navigation controller. The navigation host represents just an empty UI container which will display inside the fragment destination. The navigation graph is an XML file defining all navigation-related information in one centralized location. Includes all individual areas of content in your app also called destinations and the possible paths that a user can go through. Lastly, the navigation controller is the object responsible for managing the contents inside a navigation host and it is used to trigger routing to a different destination. Since the navigation component is designed to represent the entirety of actions inside a single activity, we will have in each activity such a component with its key parts. In terms of data updates, as mentioned previously we will work with an event driven methodology based on the observer pattern. Each view will have a reference to the necessary ViewModels and listen to updates on which the UI will react accordingly
+
+Lastly, we are going to present the Model layer. In general an Android application communicates with two different components in the model layer: the local database and the network. In order to break the gap such that the ViewModel is not communicating directly with those providers, the repository is introduced as the middle layer. In order to reduce the number of necessary network requests every time some UI element is created, we will store in the persistence layer (the database) some of the information received from the web service. As a provider, we will use Room Persistence Library which offers an abstraction layer over SQLite and integration with LiveData - an observable data holder class. As a result we would obtain direct binding from the Persistence Layer all the way through the UI for certain exposed information with automatic updates once the database was modified. For communicating with the web service through HTTP requests, we will use Retrofit. Retrofit is an open-source library designed to ease the code required for HTTP requests reducing the necessary boilerplate code. In order to maintain the principle of single source of truth, the repository will act as an intermediary layer between the the view-model and the data model components. The standard source of data is the database which is updated with responses from the server, but for the data which will not be cached locally the repository will acquire it every time from the server and pass it to the viewmodel layer.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=7cm]{images/AndroidArchitecture.png} 
+\caption{Mobile Client App Architecture}
+\label{fig:mobielclientapparchitecture}
+\end{figure}
+\begin{flushright}
+Created with: https://creately.com/
+\end{flushright}
 
 \section{Application Core Functionalities}
 
@@ -122,7 +147,7 @@ On the mobile side of the application, the login implementation involves several
 
 \begin{figure}[H]
 \centering
-\includegraphics[height=10cm]{images/LoginGUIScreenshot.jpg} 
+\includegraphics[height=8cm]{images/LoginGUIScreenshot.jpg} 
 \caption{Login GUI Screenshot}
 \label{fig:loginguiscreenshot}
 \end{figure}
