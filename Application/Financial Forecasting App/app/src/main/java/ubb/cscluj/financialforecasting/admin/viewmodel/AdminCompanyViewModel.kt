@@ -27,7 +27,7 @@ class AdminCompanyViewModel(application: Application) : AndroidViewModel(applica
         val companyDao =
             (application as MainApplication).databaseReference.companyDao()
         val favouriteCompanyDao =
-            (application as MainApplication).databaseReference.favouriteCompanyDao()
+            application.databaseReference.favouriteCompanyDao()
         val networkService = application.networkService
 
         userToken = application.userToken

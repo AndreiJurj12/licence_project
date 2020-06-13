@@ -27,7 +27,6 @@ class LoginRepository(private val networkService: NetworkService) {
     }
 
     suspend fun registerUser(registerRequest: RegisterRequest): RegisterResponse {
-
         val response = networkService.service.register(registerRequest)
         if (response.raw().code == HttpURLConnection.HTTP_OK) {
             return response.body() as RegisterResponse

@@ -1,14 +1,15 @@
 package ubb.cscluj.financialforecasting.repository.company
 
+import com.google.gson.Gson
+import retrofit2.Response
 import ubb.cscluj.financialforecasting.database_persistence.CompanyDao
 import ubb.cscluj.financialforecasting.database_persistence.FavouriteCompanyDao
 import ubb.cscluj.financialforecasting.utils.logd
 import ubb.cscluj.financialforecasting.model.Company
-import ubb.cscluj.financialforecasting.model.network_model.CompanyAdditionRequestDto
-import ubb.cscluj.financialforecasting.model.network_model.CompanyDto
-import ubb.cscluj.financialforecasting.model.network_model.CompanyUpdateRequestDto
-import ubb.cscluj.financialforecasting.model.network_model.UpdateAllStockDataResponseDto
+import ubb.cscluj.financialforecasting.model.FavouriteCompany
+import ubb.cscluj.financialforecasting.model.network_model.*
 import ubb.cscluj.financialforecasting.service.NetworkService
+import ubb.cscluj.financialforecasting.utils.toFavouriteCompany
 import java.net.HttpURLConnection
 
 class CompanyRepository(
@@ -17,6 +18,7 @@ class CompanyRepository(
     private val favouriteCompanyDao: FavouriteCompanyDao
 ) {
     val allCompanies = companyDao.getAllCompanies()
+    val allFavouriteCompanies = favouriteCompanyDao.getAllFavouriteCompanies()
 
 
     suspend fun refreshFromServer(userToken: String) {
@@ -50,11 +52,53 @@ class CompanyRepository(
     }
 
     suspend fun initialLoading(userToken: String) {
-        val countFeedbackMessages = companyDao.getCountCompanies()
+        val countCompanies = companyDao.getCountCompanies()
 
-        if (countFeedbackMessages == 0L) {
+        if (countCompanies == 0L) {
             refreshFromServer(userToken)
         }
+    }
+
+    suspend fun refreshFromServerFavourites(userToken: String) {
+        logd("Enter CompanyRepository: refreshFromServerFavourites($userToken)")
+        val response = networkService.service.getAllFavouriteCompanies(userToken)
+        logd("Http response obtained: $response")
+        if (response.raw().code != HttpURLConnection.HTTP_OK) {
+            throw CompanyNetworkException(
+                "Refresh from server favourites failed!"
+            )
+        }
+
+        val newCompanies = response.body() as List<CompanyDto>
+        val convertedCompanies = newCompanies.map {
+            FavouriteCompany(
+                id = it.companyId,
+                name = it.name,
+                stockTickerSymbol = it.stockTickerSymbol,
+                description = it.description,
+                foundedYear = it.foundedYear,
+                urlLink = it.urlLink,
+                urlLogo = it.urlLogo,
+                csvDataPath = it.csvDataPath,
+                readyForPrediction = it.readyForPrediction
+            )
+        }
+        logd("NewFavouritesCompanies obtained: $convertedCompanies")
+
+        favouriteCompanyDao.clearDatabaseTable()
+        favouriteCompanyDao.insertFavouriteCompanyList(convertedCompanies)
+    }
+
+    suspend fun initialLoadingFavourite(userToken: String) {
+        /*
+        val countCompanies = favouriteCompanyDao.getCountFavouriteCompanies()
+
+        if (countCompanies == 0L) {
+            refreshFromServerFavourites(userToken)
+        }
+         */
+        //for favourites we must always load since we don't differentiate based on userId
+        refreshFromServerFavourites(userToken)
     }
 
     suspend fun addNewCompany(company: Company, userToken: String) {
@@ -143,5 +187,78 @@ class CompanyRepository(
             val updateAllStockDataResponseDto = response.body() as UpdateAllStockDataResponseDto
             throw CompanyNetworkException(updateAllStockDataResponseDto.message)
         }
+    }
+
+    suspend fun switchFavouriteCompany(company: Company, userToken: String) {
+        if (favouriteCompanyDao.findFavouriteCompanyById(company.id) == null) {
+            addNewFavouriteCompany(company, userToken)
+        } else {
+            removeFavouriteCompany(company, userToken)
+        }
+    }
+
+    private suspend fun addNewFavouriteCompany(company: Company, userToken: String) {
+        val response = networkService.service.addNewFavouriteCompany(
+            userToken,
+            FavouriteCompanyAdditionRequestDto(companyId = company.id)
+        )
+        logd("Http response obtained: $response")
+        if (response.raw().code != HttpURLConnection.HTTP_OK) {
+            val favouriteCompanyAdditionResponseDto =
+                response.body() as FavouriteCompanyAdditionResponseDto
+            throw CompanyNetworkException(favouriteCompanyAdditionResponseDto.message)
+        }
+
+        favouriteCompanyDao.insertFavouriteCompany(company.toFavouriteCompany())
+    }
+
+    private suspend fun removeFavouriteCompany(company: Company, userToken: String) {
+        val response = networkService.service.removeFavouriteCompany(
+            userToken,
+            FavouriteCompanyRemovalRequestDto(companyId = company.id)
+        )
+        logd("Http response obtained: $response")
+        if (response.raw().code != HttpURLConnection.HTTP_OK) {
+            val favouriteCompanyRemovalResponseDto =
+                response.body() as FavouriteCompanyRemovalResponseDto
+            throw CompanyNetworkException(favouriteCompanyRemovalResponseDto.message)
+        }
+
+        favouriteCompanyDao.deleteFavouriteCompany(company.id)
+    }
+
+
+    suspend fun requirePrediction(companyId: Long, predictionStartingDate: String, userToken: String) : PredictionResponseDto{
+        val response = networkService.service.requirePrediction(
+            userToken,
+            PredictionRequestDto(
+                companyId = companyId,
+                predictionStartingDay = predictionStartingDate
+            )
+        )
+        logd("Http response obtained: $response")
+        if (response.raw().code != HttpURLConnection.HTTP_OK) {
+            val predictionResponseDto =
+                Gson().fromJson(response.errorBody()!!.charStream(), PredictionResponseDto::class.java)
+            throw CompanyNetworkException(predictionResponseDto.message)
+        }
+
+        return response.body() as PredictionResponseDto
+    }
+
+    suspend fun getHistoricalDataClosePrice(companyId: Long, requireNoDays: Long, userToken: String): List<DateClosePrice> {
+        val response = networkService.service.getHistoricalDataClosePrice(
+            userToken = userToken,
+            historicalDataClosePriceDto = HistoricalDataClosePriceDto(
+                companyId = companyId,
+                requiredCount = requireNoDays
+            )
+        )
+        logd("Http response obtained: $response")
+        if (response.raw().code != HttpURLConnection.HTTP_OK) {
+            throw CompanyNetworkException("Failed obtaining historical prices on the server!")
+        }
+
+        return response.body() as List<DateClosePrice>
     }
 }

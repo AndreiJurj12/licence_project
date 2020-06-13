@@ -8,9 +8,9 @@
             android:icon="@drawable/ic_home"
             android:title="@string/main" />
         <item
-            android:id="@+id/clientFavouritesFragment"
-            android:icon="@drawable/ic_favorite_border"
-            android:title="@string/favourites" />
+            android:id="@+id/clientNewsFragment"
+            android:icon="@drawable/ic_view_list"
+            android:title="@string/news" />
         <item
             android:id="@+id/clientFeedbackFragment"
             android:icon="@drawable/ic_feedback"

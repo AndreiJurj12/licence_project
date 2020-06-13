@@ -21,6 +21,16 @@
         </androidx.recyclerview.widget.RecyclerView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/feedback_no_messages_available_text_view"
+        style="?attr/textAppearanceHeadline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_feedback_messages_available"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+    
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/client_floating_action_button"
         android:layout_width="wrap_content"

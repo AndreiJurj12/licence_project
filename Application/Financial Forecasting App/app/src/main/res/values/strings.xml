@@ -48,4 +48,30 @@
     <string name="ready_for_prediction_label">Ready for prediction:</string>
     <string name="panel">Panel</string>
     <string name="update_stock_data_message">Update Stock Data Available</string>
+    <string name="news">News</string>
+    <string name="title_label">Title</string>
+    <string name="author_label">Author</string>
+    <string name="description">Description</string>
+    <string name="company_details_title">Company Details</string>
+    <string name="company_title">Company X</string>
+    <string name="company_founded_year">Founded in %1$d</string>
+    <string name="url_official_site_label">Official Site:</string>
+    <string name="sample_link">www.sample.com</string>
+    <string name="prediction_button_label">Predict</string>
+
+
+    <string name="prediction_datepicker_title">Pick a date for prediction</string>
+    <string name="prediction_for_date">Prediction starting date is: %1$s</string>
+    <string name="classification_result_label">Classification result:</string>
+    <string name="sample_classification_result">Increase</string>
+    <string name="prediction_for_last_closing_price">Last input price: %1$.4f$</string>
+    <string name="regression_result_label">Regression result:</string>
+    <string name="sample_regression_result">%1$.4f$</string>
+    <string name="historical_price_label">Historical prices</string>
+    <string name="select_historical_price_label">Choose chart price interval</string>
+    <string name="historical_month_label">21d</string>
+    <string name="historical_three_months_label">63d</string>
+    <string name="historical_year_label">252d</string>
+    <string name="expected_prediction_for_closing_price">Expected closing price is: %1$s$</string>
+    <string name="no_feedback_messages_available">No feedback messages available</string>
 </resources>

@@ -11,6 +11,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import ubb.cscluj.financialforecasting.model.User
 import ubb.cscluj.financialforecasting.model.network_model.*
+import ubb.cscluj.financialforecasting.model.news.News
+import ubb.cscluj.financialforecasting.model.news.NewsResponse
+import java.util.concurrent.TimeUnit
 
 class NetworkService(private var context: Context) {
     private val URL = "http://192.168.43.214:8080"
@@ -49,6 +52,8 @@ class NetworkService(private var context: Context) {
                             this.addInterceptor(networkService.interceptor)
                         }
                             .cache(networkService.cache)
+                            .readTimeout(1, TimeUnit.MINUTES)
+                            .writeTimeout(1, TimeUnit.MINUTES)
                             .build()
 
                         networkService.retrofit = Retrofit.Builder()
@@ -121,5 +126,45 @@ class NetworkService(private var context: Context) {
         suspend fun updateAllStockData(
             @Header("Authorization") userToken: String
         ): Response<UpdateAllStockDataResponseDto>
+
+        @GET("/api/company/get_favourite_user_companies")
+        suspend fun getAllFavouriteCompanies(
+            @Header("Authorization") userToken: String
+        ): Response<List<CompanyDto>>
+
+        @POST("/api/company/add_new_favourite_user_company")
+        suspend fun addNewFavouriteCompany(
+            @Header("Authorization") userToken: String,
+            @Body favouriteCompanyAdditionRequestDto: FavouriteCompanyAdditionRequestDto
+        ): Response<FavouriteCompanyAdditionResponseDto>
+
+        @HTTP(method = "DELETE", path = "/api/company/remove_favourite_user_company", hasBody = true)
+        suspend fun removeFavouriteCompany(
+            @Header("Authorization") userToken: String,
+            @Body favouriteCompanyRemovalRequestDto: FavouriteCompanyRemovalRequestDto
+        ): Response<FavouriteCompanyRemovalResponseDto>
+
+
+        @POST("/api/company/require_prediction")
+        suspend fun requirePrediction(
+            @Header("Authorization") userToken: String,
+            @Body predictionRequestDto: PredictionRequestDto
+        ): Response<PredictionResponseDto>
+
+        @POST("/api/company/get_historical_data_close_price")
+        suspend fun getHistoricalDataClosePrice(
+            @Header("Authorization") userToken: String,
+            @Body historicalDataClosePriceDto: HistoricalDataClosePriceDto
+        ): Response<List<DateClosePrice>>
+
+
+
+
+        @GET("http://newsapi.org/v2/top-headlines")
+        suspend fun getRecentNews(
+            @Query("apiKey") apiKey: String,
+            @Query("country") country: String = "us",
+            @Query("category") category: String = "business"
+        ): Response<NewsResponse>
     }
 }

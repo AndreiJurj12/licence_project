@@ -23,10 +23,11 @@ class AdminPanelViewModel (application: Application) : AndroidViewModel(applicat
     init {
         val companyDao =
             (application as MainApplication).databaseReference.companyDao()
+        val favouriteCompanyDao = application.databaseReference.favouriteCompanyDao()
         val networkService = application.networkService
 
         userToken = application.userToken
-        companyRepository = CompanyRepository(networkService, companyDao)
+        companyRepository = CompanyRepository(networkService, companyDao, favouriteCompanyDao)
     }
 
 

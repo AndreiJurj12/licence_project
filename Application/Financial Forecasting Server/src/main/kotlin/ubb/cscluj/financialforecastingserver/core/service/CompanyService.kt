@@ -3,11 +3,9 @@ package ubb.cscluj.financialforecastingserver.core.service
 import ubb.cscluj.financialforecastingserver.core.exceptions.ExternalAPIFailedException
 import ubb.cscluj.financialforecastingserver.core.exceptions.IdNotFoundException
 import ubb.cscluj.financialforecastingserver.core.model.Company
+import ubb.cscluj.financialforecastingserver.core.model.StockMarketIndex
 import ubb.cscluj.financialforecastingserver.core.validator.ValidationException
-import ubb.cscluj.financialforecastingserver.web.dto.CompanyAdditionRequestDto
-import ubb.cscluj.financialforecastingserver.web.dto.CompanyUpdateRequestDto
-import ubb.cscluj.financialforecastingserver.web.dto.FavouriteCompanyAdditionRequestDto
-import ubb.cscluj.financialforecastingserver.web.dto.FavouriteCompanyRemovalRequestDto
+import ubb.cscluj.financialforecastingserver.web.dto.*
 
 interface CompanyService {
     @Throws(ValidationException::class, ExternalAPIFailedException::class)
@@ -31,4 +29,14 @@ interface CompanyService {
     fun removeFavouriteUserCompany(favouriteCompanyRemovalRequestDto: FavouriteCompanyRemovalRequestDto, userId: Long)
 
 
+    @Throws(ValidationException::class, ExternalAPIFailedException::class)
+    fun saveNewStockMarketIndex(stockMarketIndexAdditionRequestDto: StockMarketIndexAdditionRequestDto): StockMarketIndex
+
+
+    @Throws(ValidationException::class)
+    fun predictionRequest(predictionRequestDto: PredictionRequestDto): PredictionResponseDto
+
+
+    @Throws(ValidationException::class)
+    fun getHistoricalDataClosePrice(historicalDataClosePriceDto: HistoricalDataClosePriceDto): List<DateClosePrice>
 }

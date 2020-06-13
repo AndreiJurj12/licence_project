@@ -24,6 +24,7 @@ class ExternalStockDataServiceImpl : ExternalStockDataService {
 
     @Value("\${twelvedata.api-key}")
     private lateinit var apikey: String
+
     @Autowired
     private lateinit var restTemplate: RestTemplate
 

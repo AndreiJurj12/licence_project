@@ -24,11 +24,12 @@ class AdminCompanyUpdateDetailViewModel(application: Application) : AndroidViewM
 
     init {
         val companyDao = (application as MainApplication).databaseReference.companyDao()
+        val favouriteCompanyDao = application.databaseReference.favouriteCompanyDao()
         val networkService = application.networkService
-        companyRepository = CompanyRepository(networkService, companyDao)
+        companyRepository = CompanyRepository(networkService, companyDao, favouriteCompanyDao)
     }
 
-    fun loadNewCompany(companyId: Long) {
+    fun loadNewCompany(companyId: Long) = viewModelScope.launch{
         val newExposedLoadedDetailTaskState =
             AdminExposedLoadedDetailTaskState(
                 isFinished = false,

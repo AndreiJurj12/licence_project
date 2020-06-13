@@ -1,5 +1,6 @@
 package ubb.cscluj.financialforecastingserver.core.service
 
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,18 +9,19 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ubb.cscluj.financialforecastingserver.core.exceptions.IdNotFoundException
 import ubb.cscluj.financialforecastingserver.core.model.Company
+import ubb.cscluj.financialforecastingserver.core.model.StockMarketIndex
 import ubb.cscluj.financialforecastingserver.core.model.User
 import ubb.cscluj.financialforecastingserver.core.repository.CompanyRepository
 import ubb.cscluj.financialforecastingserver.core.repository.FavouriteCompanyRepository
+import ubb.cscluj.financialforecastingserver.core.repository.StockMarketIndexRepository
 import ubb.cscluj.financialforecastingserver.core.repository.UserRepository
-import ubb.cscluj.financialforecastingserver.core.validator.CompanyAdditionRequestValidator
-import ubb.cscluj.financialforecastingserver.core.validator.CompanyUpdateRequestValidator
-import ubb.cscluj.financialforecastingserver.core.validator.ValidationException
-import ubb.cscluj.financialforecastingserver.web.dto.CompanyAdditionRequestDto
-import ubb.cscluj.financialforecastingserver.web.dto.CompanyUpdateRequestDto
-import ubb.cscluj.financialforecastingserver.web.dto.FavouriteCompanyAdditionRequestDto
-import ubb.cscluj.financialforecastingserver.web.dto.FavouriteCompanyRemovalRequestDto
+import ubb.cscluj.financialforecastingserver.core.validator.*
+import ubb.cscluj.financialforecastingserver.web.dto.*
 import java.lang.Exception
+import java.time.Duration
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.ArrayList
 
 @Service
 class CompanyServiceImpl @Autowired constructor(
@@ -28,10 +30,14 @@ class CompanyServiceImpl @Autowired constructor(
         val companyUpdateRequestValidator: CompanyUpdateRequestValidator,
         val externalStockDataService: ExternalStockDataService,
         val userRepository: UserRepository,
-        val favouriteCompanyRepository: FavouriteCompanyRepository
+        val favouriteCompanyRepository: FavouriteCompanyRepository,
+        val stockMarketIndexRepository: StockMarketIndexRepository,
+        val stockMarketIndexAdditionRequestValidator: StockMarketIndexAdditionRequestValidator,
+        val predictionRequestValidator: PredictionRequestValidator,
+        val predictionService: PredictionService,
+        val historicalDataClosePriceDtoValidator: HistoricalDataClosePriceDtoValidator
 ) : CompanyService {
     private var logging: Logger = LogManager.getLogger(CompanyServiceImpl::class.java)
-
 
 
     @Transactional
@@ -82,6 +88,13 @@ class CompanyServiceImpl @Autowired constructor(
 
             logging.debug("Company ${it.name} has stock data updated")
         }
+
+        val allStockMarketIndexList = stockMarketIndexRepository.findAll()
+        allStockMarketIndexList.forEach {
+            externalStockDataService.updateCompanyLatestData(it.stockTickerSymbol, it.csvDataPath)
+
+            logging.debug("Stock Market Index ${it.name} has stock data updated")
+        }
     }
 
     override fun getFavouriteUserCompanies(userId: Long): List<Company> {
@@ -116,5 +129,204 @@ class CompanyServiceImpl @Autowired constructor(
         if (favouriteCompany != null) {
             favouriteCompanyRepository.delete(favouriteCompany)
         }
+    }
+
+    @Transactional
+    override fun saveNewStockMarketIndex(stockMarketIndexAdditionRequestDto: StockMarketIndexAdditionRequestDto): StockMarketIndex {
+        stockMarketIndexAdditionRequestValidator.validate(stockMarketIndexAdditionRequestDto)
+
+
+        val newStockMarketIndex = StockMarketIndex(
+                name = stockMarketIndexAdditionRequestDto.name,
+                stockTickerSymbol = stockMarketIndexAdditionRequestDto.stockTickerSymbol,
+                csvDataPath = stockMarketIndexAdditionRequestDto.csvDataPath + "\\${stockMarketIndexAdditionRequestDto.stockTickerSymbol}.csv"
+        )
+
+        val savedStockMarketIndex = stockMarketIndexRepository.save(newStockMarketIndex)
+
+        externalStockDataService.loadInitialData(savedStockMarketIndex.stockTickerSymbol, savedStockMarketIndex.csvDataPath)
+
+        return savedStockMarketIndex
+    }
+
+    override fun predictionRequest(predictionRequestDto: PredictionRequestDto): PredictionResponseDto {
+        predictionRequestValidator.validate(predictionRequestDto)
+
+        val company = companyRepository.findByIdOrNull(predictionRequestDto.companyId)
+                ?: throw IdNotFoundException("Id for company: ${predictionRequestDto.companyId} not found")
+        if (!company.readyForPrediction) {
+            throw ValidationException("Company not ready for prediction")
+        }
+
+        this.validatePredictionDateForCompany(company, predictionRequestDto.predictionStartingDay)
+        //now we are ready to create the request dto for the prediction service
+
+        return this.internalExternalPredictionRequestCall(company, predictionRequestDto.predictionStartingDay)
+    }
+
+    override fun getHistoricalDataClosePrice(historicalDataClosePriceDto: HistoricalDataClosePriceDto): List<DateClosePrice> {
+        historicalDataClosePriceDtoValidator.validate(historicalDataClosePriceDto)
+
+        val company = companyRepository.findByIdOrNull(historicalDataClosePriceDto.companyId)
+                ?: throw IdNotFoundException("Id for company: ${historicalDataClosePriceDto.companyId} not found")
+
+        val allHistoricalPrices = this.getAllCloseDataPricesOfCompany(company)
+
+        return allHistoricalPrices.sortedByDescending { it.date }
+                .take(historicalDataClosePriceDto.requiredCount.toInt())
+                .toList()
+    }
+
+    private fun internalExternalPredictionRequestCall(company: Company, startingPredictionDay: String): PredictionResponseDto {
+        val dowJonesIndustrialStockMarketIndex =
+                stockMarketIndexRepository.findStockMarketIndexByStockTickerSymbol(dowJonesIndustrialStockTickerSymbol)
+        val nasdaqCompositeStockMarketIndex =
+                stockMarketIndexRepository.findStockMarketIndexByStockTickerSymbol(nasdaqCompositeStockTickerSymbol)
+        val realStartingPredictionDay = this.getClosestWorkingDayIfNotWorking(company, startingPredictionDay)
+
+        val externalPredictionRequest = ExternalPredictionRequest(
+                companyTickerSymbol = company.stockTickerSymbol,
+                companyCsvDataPath = company.csvDataPath,
+                predictionStartingDay = realStartingPredictionDay,
+                dowJonesIndustrialCsvDataPath = dowJonesIndustrialStockMarketIndex!!.csvDataPath,
+                nasdaqCompositeCsvDataPath = nasdaqCompositeStockMarketIndex!!.csvDataPath
+        )
+
+        val externalPredictionResponse = predictionService.predict(externalPredictionRequest)
+
+
+        //get historical prices also for the request
+        val historicalPrices = this.getHistoricalClosePriceBetweenDates(startingPredictionDay, company)
+
+        //get expected prediction price if available
+        val expectedPredictedPrice = this.getFutureClosePredictionIfExists(startingPredictionDay, company)
+
+        return PredictionResponseDto(
+                message = "Successful prediction",
+                classificationResult = externalPredictionResponse.classificationResult,
+                regressionResult = externalPredictionResponse.regressionResult,
+                historicalClosePrice = historicalPrices,
+                expectedPredictedPrice = expectedPredictedPrice
+        )
+    }
+
+    private fun getHistoricalClosePriceBetweenDates(startingPredictionDay: String, company: Company): List<DateClosePrice> {
+        val allHistoricalPrices = this.getAllCloseDataPricesOfCompany(company)
+
+        return allHistoricalPrices
+                .filter { it.date <= LocalDate.parse(startingPredictionDay, dateFormatter) }
+                .sortedByDescending { it.date }
+                .take(noDaysResponseWithPrediction)
+                .toList()
+    }
+
+    private fun getFutureClosePredictionIfExists(startingPredictionDay: String, company: Company): DateClosePrice? {
+        val allHistoricalPrices = this.getAllCloseDataPricesOfCompany(company)
+
+        return allHistoricalPrices
+                .filter { it.date > LocalDate.parse(startingPredictionDay, dateFormatter) }
+                .sortedBy { it.date }
+                .getOrNull(noDaysFuturePrediction - 1)
+    }
+
+    private fun getAllCloseDataPricesOfCompany(company: Company): List<DateClosePrice> {
+        val allHistoricalPrices: MutableList<DateClosePrice> = mutableListOf()
+
+        csvReader().open(company.csvDataPath) {
+            readAllWithHeaderAsSequence().forEach { row ->
+                val currentDateString = row[dateHeaderLabel]
+                if (currentDateString != null) {
+                    val currentDate = LocalDate.parse(currentDateString, dateFormatter)
+                    val currentClosePrice = row[closePriceHeaderLabel]?.toDouble() ?: 0.0
+                    allHistoricalPrices.add(DateClosePrice(
+                            date = currentDate,
+                            closePrice = currentClosePrice
+                    ))
+                }
+            }
+        }
+
+        return allHistoricalPrices.toList()
+    }
+
+    private fun getClosestWorkingDayIfNotWorking(company: Company, startingPredictionDay: String): String {
+        val convertedStartingPredictionDate = LocalDate.parse(startingPredictionDay, dateFormatter)
+        var closestDateAvailable = LocalDate.of(1950, 1, 1)
+
+        csvReader().open(company.csvDataPath) {
+            readAllWithHeaderAsSequence().forEach { row ->
+                val currentDateString = row[dateHeaderLabel]
+                if (currentDateString != null) {
+                    val currentDate = LocalDate.parse(currentDateString, dateFormatter)
+                    if (currentDate <= convertedStartingPredictionDate && closestDateAvailable < currentDate) {
+                        closestDateAvailable = currentDate
+                    }
+                }
+            }
+        }
+
+        return closestDateAvailable.format(dateFormatter)
+    }
+
+    private fun validatePredictionDateForCompany(company: Company, startingPredictionDay: String) {
+        val companyExtremeDates = this.getMinimumAndMaximumDateFromCompanyData(company)
+        val companyMinimumDate = companyExtremeDates.first
+        val companyMaximumDate = companyExtremeDates.second
+
+        val requestedPredictionDate = LocalDate.parse(startingPredictionDay, dateFormatter)
+
+        if (requestedPredictionDate > companyMaximumDate) {
+            throw ValidationException("Prediction date is too much into the future")
+        }
+        if (requestedPredictionDate < companyMinimumDate) {
+            throw ValidationException("Prediction date is too much into the past")
+        }
+
+        val noDaysAvailableForPreprocessing = Duration.between(companyMinimumDate.atStartOfDay(), requestedPredictionDate.atStartOfDay()).toDays()
+        if (noDaysAvailableForPreprocessing < noDaysRequiredForPrediction) {
+            throw ValidationException("Prediction date is too much into the past - not available data for preprocessing")
+        }
+    }
+
+    private fun getMinimumAndMaximumDateFromCompanyData(company: Company): Pair<LocalDate, LocalDate> {
+        var minimumDate = LocalDate.of(2050, 1, 1)
+        var maximumDate = LocalDate.of(1950, 1, 1)
+
+        csvReader().open(company.csvDataPath) {
+            readAllWithHeaderAsSequence().forEach { row ->
+                val currentDateString = row[dateHeaderLabel]
+                if (currentDateString != null) {
+                    val currentDate = LocalDate.parse(currentDateString, dateFormatter)
+
+                    if (minimumDate > currentDate)
+                        minimumDate = currentDate
+
+                    if (maximumDate < currentDate)
+                        maximumDate = currentDate
+                }
+            }
+        }
+
+        return Pair(minimumDate, maximumDate)
+    }
+
+    companion object CustomFields {
+        private const val dowJonesIndustrialStockTickerSymbol = "DJI"
+        private const val nasdaqCompositeStockTickerSymbol = "IXIC"
+
+
+        private const val dateFormat = "yyyy-MM-dd"
+        private var dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat)
+
+        const val dateHeaderLabel: String = "Date"
+        const val closePriceHeaderLabel: String = "Close"
+        var headersList: List<String> = listOf("Date", "Open", "High", "Low", "Close", "Volume")
+        val dateTimeStrToLocalDate: (String) -> LocalDate = {
+            LocalDate.parse(it, dateFormatter)
+        }
+
+        const val noDaysRequiredForPrediction = 252 * 2
+        const val noDaysResponseWithPrediction = 30
+        const val noDaysFuturePrediction = 5
     }
 }

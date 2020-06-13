@@ -97,6 +97,8 @@ class ClientFeedbackFragment : Fragment(), ClientFeedbackMessageAdapter.OnItemCl
             viewLifecycleOwner,
             Observer { feedbackMessages ->
                 logd("New feedback messages received by observable: $feedbackMessages")
+                binding.feedbackNoMessagesAvailableTextView.visibility =
+                    if (feedbackMessages.isEmpty()) View.VISIBLE else View.GONE
                 feedbackMessages.let { clientFeedbackMessageAdapter.updateList(it) }
             })
 
@@ -119,10 +121,12 @@ class ClientFeedbackFragment : Fragment(), ClientFeedbackMessageAdapter.OnItemCl
                 if (clientGenericExposedTaskState.message == "Successful initial loading") {
                     return
                 }
-                showSnackbarSuccessful(clientGenericExposedTaskState.message, binding.coordinatorLayout)
+                showSnackbarSuccessful(
+                    clientGenericExposedTaskState.message,
+                    binding.coordinatorLayout
+                )
             }
-        }
-        else {
+        } else {
             binding.loadingProgressBar.show()
         }
     }

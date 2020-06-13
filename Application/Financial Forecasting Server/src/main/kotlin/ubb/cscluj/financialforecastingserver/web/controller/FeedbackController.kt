@@ -24,7 +24,7 @@ class FeedbackController @Autowired constructor(
 
 
     @RequestMapping(value = ["/admin/all_feedback_messages"], method = [RequestMethod.GET])
-    fun getAllFeedbackMessages(): ResponseEntity<List<FeedbackMessageDto>> {
+    fun getAllFeedbackMessages(@RequestHeader("Authorization") userToken: String): ResponseEntity<List<FeedbackMessageDto>> {
         logging.debug("Entering get all feedback messages")
 
         return try {

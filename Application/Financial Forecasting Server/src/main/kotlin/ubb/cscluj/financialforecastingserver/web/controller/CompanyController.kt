@@ -10,13 +10,16 @@ import ubb.cscluj.financialforecastingserver.core.service.AuthenticationService
 import ubb.cscluj.financialforecastingserver.core.service.CompanyService
 import ubb.cscluj.financialforecastingserver.web.dto.*
 import ubb.cscluj.financialforecastingserver.web.mapper.CompanyDtoMapper
+import ubb.cscluj.financialforecastingserver.web.mapper.StockMarketIndexDtoMapper
+import javax.xml.crypto.Data
 
 @RestController
 @RequestMapping("/api/company")
 class CompanyController @Autowired constructor(
         private val companyService: CompanyService,
         private val companyDtoMapper: CompanyDtoMapper,
-        private val authenticationService: AuthenticationService
+        private val authenticationService: AuthenticationService,
+        private val stockMarketIndexDtoMapper: StockMarketIndexDtoMapper
 ) {
     private var logging: Logger = LogManager.getLogger(CompanyController::class.java)
 
@@ -69,6 +72,7 @@ class CompanyController @Autowired constructor(
             ResponseEntity(updateAllStockDataResponseDto, HttpStatus.OK)
         } catch (exception: Exception) {
             logging.debug("Exception caught: ${exception.message}")
+
 
             val updateAllStockDataResponseDto = UpdateAllStockDataResponseDto(
                     message = "Updating all stock data failed with error message: ${exception.message}"
@@ -155,6 +159,61 @@ class CompanyController @Autowired constructor(
                     message = "Error in removing the favourite company with message: ${exception.message}"
             )
             ResponseEntity(favouriteCompanyRemovalResponseDto, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @RequestMapping(value = ["/admin/save_new_stock_market_index"], method = [RequestMethod.POST])
+    fun saveNewStockMarketIndex(@RequestHeader("Authorization") userToken: String,
+                       @RequestBody stockMarketIndexAdditionRequestDto: StockMarketIndexAdditionRequestDto): ResponseEntity<StockMarketIndexDto> {
+        logging.debug("Entering save new stockmarketindex with request $stockMarketIndexAdditionRequestDto")
+        return try {
+            val savedStockMarketIndex = companyService.saveNewStockMarketIndex(stockMarketIndexAdditionRequestDto)
+
+            val savedStockMarketIndexDto = stockMarketIndexDtoMapper.convertModelToDto(savedStockMarketIndex)
+            logging.debug("Successful saveNewStockMarketIndex with response: $savedStockMarketIndexDto")
+            ResponseEntity(savedStockMarketIndexDto, HttpStatus.OK)
+        } catch (exception: Exception) {
+            logging.debug("Exception caught: ${exception.message}")
+
+            val invalidStockMarketIndexDto = StockMarketIndexDto() //standard invalid data
+            ResponseEntity(invalidStockMarketIndexDto, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+
+
+    @RequestMapping(value = ["/require_prediction"], method = [RequestMethod.POST])
+    fun requiredPrediction(@RequestHeader("Authorization") userToken: String,
+                           @RequestBody predictionRequestDto: PredictionRequestDto): ResponseEntity<PredictionResponseDto> {
+        logging.debug("Entering required prediction with request $predictionRequestDto")
+        return try {
+            val predictionResponseDto = companyService.predictionRequest(predictionRequestDto)
+
+            logging.debug("Successful requiredPrediction with response: $predictionResponseDto")
+            ResponseEntity(predictionResponseDto, HttpStatus.OK)
+        } catch (exception: Exception) {
+            logging.debug("Exception caught: ${exception.message}")
+
+            val invalidPredictionResponseDto = PredictionResponseDto(
+                    message = exception.message ?: "Unknown error"
+            ) //standard invalid data
+            ResponseEntity(invalidPredictionResponseDto, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @RequestMapping(value = ["/get_historical_data_close_price"], method = [RequestMethod.POST])
+    fun getHistoricalDataClosePrice(
+            @RequestHeader("Authorization") userToken: String,
+            @RequestBody historicalDataClosePriceDto: HistoricalDataClosePriceDto): ResponseEntity<List<DateClosePrice>> {
+        logging.debug("Entering get historical DataClosePrice with request $historicalDataClosePriceDto")
+        return try {
+            val historicalDateClosePriceList = companyService.getHistoricalDataClosePrice(historicalDataClosePriceDto)
+
+            logging.debug("Successful getHistoricalDataClosePrice with response: $historicalDateClosePriceList")
+            ResponseEntity(historicalDateClosePriceList, HttpStatus.OK)
+        } catch (exception: Exception) {
+            logging.debug("Exception caught: ${exception.message}")
+            ResponseEntity(emptyList(), HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 }

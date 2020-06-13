@@ -13,14 +13,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ubb.cscluj.financialforecasting.databinding.FragmentRegisterBinding
-import ubb.cscluj.financialforecasting.utils.logd
 import ubb.cscluj.financialforecasting.repository.login.LoginRepository
 import ubb.cscluj.financialforecasting.repository.login.RegisterResponseException
 import ubb.cscluj.financialforecasting.login.validator.RegisterValidator
 import ubb.cscluj.financialforecasting.model.network_model.RegisterRequest
-import ubb.cscluj.financialforecasting.utils.CustomTextWatcher
-import ubb.cscluj.financialforecasting.utils.showSnackbarError
-import ubb.cscluj.financialforecasting.utils.showSnackbarSuccessful
+import ubb.cscluj.financialforecasting.utils.*
 
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
@@ -120,6 +117,7 @@ class RegisterFragment : Fragment() {
             val email = binding.editTextEmail.text.toString().trim()
             val password = binding.editTextPassword.text.toString().trim()
             val confirmPassword = binding.editTextConfirmPassword.text.toString().trim()
+            tryClosingKeyboard()
 
             if (validator.validateEmail(email) && validator.validatePassword(password) &&
                 validator.validateConfirmPassword(password, confirmPassword)
@@ -179,5 +177,16 @@ class RegisterFragment : Fragment() {
 
     private fun goBackToLoginFragment() {
         findNavController().popBackStack()
+    }
+
+    private fun tryClosingKeyboard() {
+        try {
+            val currentActivity = activity ?: throw Exception("Activity not available")
+            val currentView = view ?: throw Exception("View not available")
+            closeKeyboard(currentActivity, currentView)
+        }
+        catch (exception: Exception) {
+            loge("Exception when closing keyboard $exception")
+        }
     }
 }

@@ -19,13 +19,16 @@ interface FavouriteCompanyDao {
     suspend fun getCountFavouriteCompanies(): Long
 
     @Query("SELECT * FROM favourite_companies WHERE id = :companyId")
-    suspend fun findFavouriteCompanyById(companyId: Long): FavouriteCompany
+    suspend fun findFavouriteCompanyById(companyId: Long): FavouriteCompany?
 
 
 
     @Query("DELETE FROM favourite_companies")
     suspend fun clearDatabaseTable()
 
+
+    @Query("DELETE FROM favourite_companies WHERE id = :companyId")
+    suspend fun deleteFavouriteCompany(companyId: Long)
 
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

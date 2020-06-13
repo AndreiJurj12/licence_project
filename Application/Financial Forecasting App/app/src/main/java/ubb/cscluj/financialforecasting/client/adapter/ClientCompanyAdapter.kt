@@ -8,13 +8,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import ubb.cscluj.financialforecasting.R
 import ubb.cscluj.financialforecasting.model.Company
+import ubb.cscluj.financialforecasting.model.FavouriteCompany
+import ubb.cscluj.financialforecasting.utils.toFavouriteCompany
 
 class ClientCompanyAdapter internal constructor(
     private val itemClickListener: OnItemClickListener
 ) : RecyclerView.Adapter<ClientCompanyAdapter.ClientCompanyViewHolder>() {
 
     private var companyList: List<Company> = emptyList()
-    private var favouriteCompanyList: List<Company> = emptyList()
+    private var favouriteCompanyList: List<FavouriteCompany> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ClientCompanyViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(
@@ -39,7 +41,7 @@ class ClientCompanyAdapter internal constructor(
         notifyDataSetChanged()
     }
 
-    fun updateFavouriteCompanyList(favouriteCompanyList: List<Company>) {
+    fun updateFavouriteCompanyList(favouriteCompanyList: List<FavouriteCompany>) {
         this.favouriteCompanyList = favouriteCompanyList
         notifyDataSetChanged()
     }
@@ -64,8 +66,10 @@ class ClientCompanyAdapter internal constructor(
                 companyReadyForPredictionImageView.setImageResource(R.drawable.ic_announcement)
             }
 
-            if (favouriteCompanyList.contains(company)) {
+            var isFavourite = false
+            if (favouriteCompanyList.contains(company.toFavouriteCompany())) {
                 companyIsFavouriteImageView.setImageResource(R.drawable.ic_favorite)
+                isFavourite = true
             } else {
                 companyIsFavouriteImageView.setImageResource(R.drawable.ic_favorite_border)
             }
@@ -74,13 +78,13 @@ class ClientCompanyAdapter internal constructor(
                 itemClickListener.onNewFavouriteCompany(company)
             }
             itemView.setOnClickListener {
-                itemClickListener.onItemClicked(company)
+                itemClickListener.onItemClicked(company, isFavourite)
             }
         }
     }
 
     interface OnItemClickListener {
-        fun onItemClicked(company: Company)
+        fun onItemClicked(company: Company, isFavourite: Boolean)
         fun onNewFavouriteCompany(newFavouriteCompany: Company)
     }
 }

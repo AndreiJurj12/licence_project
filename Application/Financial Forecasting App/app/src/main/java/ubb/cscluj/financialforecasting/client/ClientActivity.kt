@@ -36,7 +36,7 @@ class ClientActivity : AppCompatActivity() {
         navController = this.findNavController(R.id.client_nav_host_fragment)
         val topLevelDestinations = setOf(
             R.id.clientMainFragment,
-            R.id.clientFavouritesFragment,
+            R.id.clientNewsFragment,
             R.id.clientFeedbackFragment,
             R.id.clientProfileFragment
         )

@@ -55,7 +55,7 @@
     <fragment
         android:id="@+id/adminFeedbackDetailFragment"
         android:name="ubb.cscluj.financialforecasting.admin.AdminFeedbackDetailFragment"
-        android:label="AdminFeedbackDetailFragment"
+        android:label="Admin Feedback Detail"
         tools:layout="@layout/fragment_admin_feedback_detail">
         <argument
             android:name="feedbackMessageId"
@@ -70,12 +70,12 @@
     <fragment
         android:id="@+id/adminCompanyAddDetailFragment"
         android:name="ubb.cscluj.financialforecasting.admin.AdminCompanyAddDetailFragment"
-        android:label="AdminCompanyAddDetailFragment"
+        android:label="Admin Company Add Detail"
         tools:layout="@layout/fragment_admin_company_add_detail"/>
     <fragment
         android:id="@+id/adminCompanyUpdateDetailFragment"
         android:name="ubb.cscluj.financialforecasting.admin.AdminCompanyUpdateDetailFragment"
-        android:label="AdminCompanyUpdateDetailFragment"
+        android:label="Admin Company Update Detail"
         tools:layout="@layout/fragment_admin_company_update_detail">
         <argument
             android:name="companyId"

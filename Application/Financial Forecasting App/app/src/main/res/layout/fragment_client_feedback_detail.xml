@@ -7,100 +7,110 @@
     android:layout_height="match_parent"
     tools:context=".client.ClientFeedbackDetailFragment">
 
-
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            style="@style/Widget.FinancialForecasting.CardView"
-            app:cardCornerRadius="8dp">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <LinearLayout
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                style="@style/Widget.FinancialForecasting.CardView"
+                app:cardCornerRadius="8dp">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/message_request_label_text_view"
-                    style="@style/Widget.MaterialComponents.TextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/message_request_label"
-                    android:textAppearance="?attr/textAppearanceHeadline6" />
-
-                <View
-                    android:id="@+id/message_request_divider"
-                    style="@style/Widget.FinancialForecasting.Divider.Horizontal"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"/>
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/message_request_text_view"
-                    style="@style/Widget.MaterialComponents.TextView"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/horizontal_gutters"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="@dimen/horizontal_gutters"
-                    android:background="?attr/colorSecondary"
-                    android:maxLines="10"
-                    android:minLines="3"
-                    android:text="@string/sample_message_request"
-                    android:textAppearance="?attr/textAppearanceBody1"
-                    android:layout_marginBottom="8dp"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.FinancialForecasting.CardView"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="8dp">
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/message_request_label_text_view"
+                        style="@style/Widget.MaterialComponents.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/message_request_label"
+                        android:textAppearance="?attr/textAppearanceHeadline6" />
 
-            <LinearLayout
+                    <View
+                        android:id="@+id/message_request_divider"
+                        style="@style/Widget.FinancialForecasting.Divider.Horizontal"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/message_request_text_view"
+                        style="@style/Widget.MaterialComponents.TextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/horizontal_gutters"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="@dimen/horizontal_gutters"
+                        android:background="?attr/colorSecondary"
+                        android:maxLines="10"
+                        android:minLines="3"
+                        android:text="@string/sample_message_request"
+                        android:textAppearance="?attr/textAppearanceBody1"
+                        android:layout_marginBottom="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                style="@style/Widget.FinancialForecasting.CardView"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="8dp">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/message_response_label_text_view"
-                    style="@style/Widget.MaterialComponents.TextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/message_response_label"
-                    android:textAppearance="?attr/textAppearanceHeadline6" />
-
-                <View
-                    android:id="@+id/message_response_divider"
-                    style="@style/Widget.FinancialForecasting.Divider.Horizontal"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"/>
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/message_response_text_view"
-                    style="@style/Widget.MaterialComponents.TextView"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/horizontal_gutters"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="@dimen/horizontal_gutters"
-                    android:background="?attr/colorSecondary"
-                    android:maxLines="10"
-                    android:minLines="3"
-                    android:text="@string/sample_message_response"
-                    android:textAppearance="?attr/textAppearanceBody1"
-                    />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-    </LinearLayout>
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/message_response_label_text_view"
+                        style="@style/Widget.MaterialComponents.TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/message_response_label"
+                        android:textAppearance="?attr/textAppearanceHeadline6" />
+
+                    <View
+                        android:id="@+id/message_response_divider"
+                        style="@style/Widget.FinancialForecasting.Divider.Horizontal"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/message_response_text_view"
+                        style="@style/Widget.MaterialComponents.TextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/horizontal_gutters"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginEnd="@dimen/horizontal_gutters"
+                        android:background="?attr/colorSecondary"
+                        android:maxLines="10"
+                        android:minLines="3"
+                        android:text="@string/sample_message_response"
+                        android:textAppearance="?attr/textAppearanceBody1"
+                        />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
 
     <androidx.core.widget.ContentLoadingProgressBar
         android:id="@+id/loading_progress_bar"
